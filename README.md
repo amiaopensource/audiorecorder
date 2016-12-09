@@ -4,6 +4,8 @@
 
 Current Usage: [-p] passthrough mode, [-e] edit config
 
+Must have FFmpeg/FFplay and Pashua installed.
+
 ## Current quirks:
 
 1. There is a small hickup when the visualization window opens. This means you must wait until the window opens to press play on source material.
