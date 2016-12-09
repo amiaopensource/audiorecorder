@@ -12,6 +12,6 @@ Must have FFmpeg/FFplay and Pashua installed.
 2. Tested on 2014 iMac and 2013 Macbook Air.  There appeared to be some dropped samples on the Air.  No problems were detected on recordings made via the iMac.
 
 ## Current Window
-Includes peak meters, spectrum information (lines represent 1,5,10,15,10 kHz), audio phase, spectrogram and a graph representing peak levels (colored area starts at -5 dB).
+Includes peak meters, spectrum information (lines represent 1,5,10,15,20 kHz), audio phase, spectrogram and a graph representing peak levels (colored area starts at -5 dB).
 
 ![Window](https://github.com/amiaopensource/audiorecorder/blob/master/current_interface.gif)
