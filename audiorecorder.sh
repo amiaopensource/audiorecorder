@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 #Cascadia Now!
 config="$HOME/.$(basename "${0}").conf"
-touch "$config"
+bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
+touch "${config}"
+touch "${bwf_config}"
 . "$config"
+. "${bwf_config}"
 
 
 
 OPTIND=1
-while getopts "ep" opt ; do
+while getopts "epm" opt ; do
     case "${opt}" in
         e) runtype="edit";;
         p) runtype="passthrough";;
+        m) runtype="metadata";;
         *)
     esac
 done
@@ -46,13 +50,41 @@ _lookup_bit_depth(){
     esac
 }
 
+_metadata_gui(){
+    gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Edit Metadata Values
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Hello
+    #Originator
+    originator.type = textfield
+    originator.label = Enter Originator
+    originator.default = "${originator}"
+    #Coding History
+    coding_history.type = textbox
+    coding_history.label = Enter Originator
+    coding_history.default = "${coding_history}"
+    cb.type = cancelbutton
+    cb.label = Cancel
+    "
+
+    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    echo "${gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
+    }
+
 _master_gui(){
 _lookup_devices    
 gui_conf="
 # Set transparency: 0 is transparent, 1 is opaque
 *.transparency=0.95
 # Set window title
-*.title = Welcome to Skookum Player!
+*.title = Welcome to Audio Recorder!
 # intro text
 intro.width = 300
 intro.type = text
@@ -141,6 +173,16 @@ _master_gui
 } > "${config}"
 fi
 
+if [ "${runtype}" = "metadata" ] ; then
+_metadata_gui
+
+{
+    echo "originator=\"${originator}\""
+    echo "coding_history=\"${coding_history}\""
+} > "${bwf_config}"
+exit 0
+fi
+
 if [ -n ${DEVICE_NUMBER} ] ; then
     _lookup_sample_rate "${sample_rate}"
 else 
@@ -190,5 +232,6 @@ read ITEM_ID
 mkfifo PIPE2REC
 ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Skookum Player" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy "${output}"/"${ITEM_ID}".wav
+"amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
+bwfmetaedit --reject-overwrite --Originator="${originator}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed "${output}"/"${ITEM_ID}".wav
