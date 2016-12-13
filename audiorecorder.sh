@@ -234,4 +234,13 @@ ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "
 ffplay -window_title "Skookum Player" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
-bwfmetaedit --reject-overwrite --Originator="${originator}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed "${output}"/"${ITEM_ID}".wav
+# Check length of Originator Reference against 32 character limit (pulled from file name)
+if
+	(("${#ITEM_ID}" > 32));
+then
+	orig_ref="See description for Identifiers"
+else
+    orig_ref="${ITEM_ID}"
+fi
+
+bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
