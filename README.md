@@ -17,4 +17,9 @@ Includes peak meters, spectrum information (lines represent 1,5,10,15,20 kHz), a
 
 ![Window](https://github.com/amiaopensource/audiorecorder/blob/master/current_interface.gif)
 
+
+## License
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />The Audio Recorder script and all associated documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
+
+Pashua is made available in accordance with the terms listed [here](https://www.bluem.net/pashua-docs-latest.html#faq.redistribution).
+>"You are allowed to re-distribute Pashua (as an external application or by shipping a modified Pashua application bundle similar to the “Doubleclickable Example”) as long as your application is freeware or Open Source Software and, additionally, is not merely a free “add-on” to some commercial service you offer."
