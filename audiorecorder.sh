@@ -49,6 +49,18 @@ _lookup_bit_depth(){
             ;;
     esac
 }
+_get_ITEM_ID(){
+    echo "Please Input Item ID or type Q to exit"
+    read ITEM_ID
+    if [ "${ITEM_ID}" = "Q" ] || [ "${ITEM_ID}" = "q" ] ; then
+        echo "Goodbye!"
+        exit 0
+    fi
+    if [ -f "${output}/${ITEM_ID}.wav" ] ; then
+        echo "A file with that name already exists!"
+        _get_ITEM_ID
+    fi
+}
 
 _metadata_gui(){
     gui_conf="
@@ -66,7 +78,7 @@ _metadata_gui(){
     originator.default = "${originator}"
     #Coding History
     coding_history.type = textbox
-    coding_history.label = Enter Originator
+    coding_history.label = Enter Coding History
     coding_history.default = "${coding_history}"
     cb.type = cancelbutton
     cb.label = Cancel
@@ -180,7 +192,6 @@ _metadata_gui
     echo "originator=\"${originator}\""
     echo "coding_history=\"${coding_history}\""
 } > "${bwf_config}"
-exit 0
 fi
 
 if [ -n ${DEVICE_NUMBER} ] ; then
@@ -227,12 +238,13 @@ if [ "${runtype}" = "passthrough" ] ; then
     exit
 fi
 
-echo "Please Input Item ID"
-read ITEM_ID
+_get_ITEM_ID
+
 mkfifo PIPE2REC
 ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Skookum Player" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
+
 
 # Check length of Originator Reference against 32 character limit (pulled from file name)
 if
