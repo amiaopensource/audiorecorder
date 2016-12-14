@@ -233,7 +233,7 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 
 if [ "${runtype}" = "passthrough" ] ; then
     ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a pcm_s16le -ar 44100 - |\
-    ffplay -window_title "Skookum Player" -f lavfi \
+    ffplay -window_title "Audio Record" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}"
     exit
 fi
@@ -242,11 +242,13 @@ _get_ITEM_ID
 
 mkfifo PIPE2REC
 ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
-ffplay -window_title "Skookum Player" -f lavfi \
+ffplay -window_title "Audio Record" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
 
-# Check length of Originator Reference against 32 character limit (pulled from file name)
+# Embed metadata in BEXT
+echo "Preparing to embed metadata"
+echo ""
 if
 	(("${#ITEM_ID}" > 32));
 then
