@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 #Cascadia Now!
 config="$HOME/.$(basename "${0}").conf"
-touch "$config"
+bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
+touch "${config}"
+touch "${bwf_config}"
 . "$config"
+. "${bwf_config}"
 
 
 
 OPTIND=1
-while getopts "ep" opt ; do
+while getopts "epm" opt ; do
     case "${opt}" in
         e) runtype="edit";;
         p) runtype="passthrough";;
+        m) runtype="metadata";;
         *)
     esac
 done
@@ -24,73 +28,113 @@ _lookup_devices(){
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
-        SAMPLE_RATE_NUMERIC="44100"
-        ;;
+            SAMPLE_RATE_NUMERIC="44100"
+            ;;
         "48 kHz")
-        SAMPLE_RATE_NUMERIC="48000"
-        ;;
+            SAMPLE_RATE_NUMERIC="48000"
+            ;;
         "96 kHz")
-        SAMPLE_RATE_NUMERIC="96000"
-        ;;
+            SAMPLE_RATE_NUMERIC="96000"
+            ;;
     esac
 }
 
 _lookup_bit_depth(){
     case "${1}" in
         "16 bit")
-        CODEC="pcm_s16le"
-        ;;
+            CODEC="pcm_s16le"
+            ;;
         "24 bit")
-       CODEC="pcm_s24le"
-        ;;
+            CODEC="pcm_s24le"
+            ;;
     esac
+}
+_get_ITEM_ID(){
+    echo "Please Input Item ID or type Q to exit"
+    read ITEM_ID
+    if [ "${ITEM_ID}" = "Q" ] || [ "${ITEM_ID}" = "q" ] ; then
+        echo "Goodbye!"
+        exit 0
+    fi
+    if [ -f "${output}/${ITEM_ID}.wav" ] ; then
+        echo "A file with that name already exists!"
+        _get_ITEM_ID
+    fi
+}
+
+_metadata_gui(){
+    gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Edit Metadata Values
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Hello
+    #Originator
+    originator.type = textfield
+    originator.label = Enter Originator
+    originator.default = "${originator}"
+    #Coding History
+    coding_history.type = textbox
+    coding_history.label = Enter Coding History
+    coding_history.default = "${coding_history}"
+    cb.type = cancelbutton
+    cb.label = Cancel
+    "
+
+    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    echo "${gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
 }
 
 _master_gui(){
-_lookup_devices    
-gui_conf="
-# Set transparency: 0 is transparent, 1 is opaque
-*.transparency=0.95
-# Set window title
-*.title = Welcome to Skookum Player!
-# intro text
-intro.width = 300
-intro.type = text
-intro.text = Hello
-#Output Location
-output.type = openbrowser
-output.label = Output Location
-output.default = "${output}"
-#Capture Device
-device.type = popup
-device.label = Select Audio Capture Device
-device.option = ${DEVICES[0]}
-device.option = ${DEVICES[1]}
-device.option = ${DEVICES[2]}
-device.option = ${DEVICES[3]}
-device.default = "${device}"
-#Sample Rate
-sample_rate.type = radiobutton
-sample_rate.label = Select Sample Rate
-sample_rate.option = 44.1 kHz
-sample_rate.option = 48 kHz
-sample_rate.option = 96 kHz
-sample_rate.default = "${sample_rate}"
-#Bit Depth
-bit_depth.type = radiobutton
-bit_depth.label = Select Bit Depth
-bit_depth.option = 16 bit
-bit_depth.option = 24 bit
-bit_depth.default = "${bit_depth}"
-#Cancel Button
-cb.type = cancelbutton
-cb.label = Cancel
-"
+    _lookup_devices    
+    gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Welcome to Audio Recorder!
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Hello
+    #Output Location
+    output.type = openbrowser
+    output.label = Output Location
+    output.default = "${output}"
+    #Capture Device
+    device.type = popup
+    device.label = Select Audio Capture Device
+    device.option = ${DEVICES[0]}
+    device.option = ${DEVICES[1]}
+    device.option = ${DEVICES[2]}
+    device.option = ${DEVICES[3]}
+    device.default = "${device}"
+    #Sample Rate
+    sample_rate.type = radiobutton
+    sample_rate.label = Select Sample Rate
+    sample_rate.option = 44.1 kHz
+    sample_rate.option = 48 kHz
+    sample_rate.option = 96 kHz
+    sample_rate.default = "${sample_rate}"
+    #Bit Depth
+    bit_depth.type = radiobutton
+    bit_depth.label = Select Bit Depth
+    bit_depth.option = 16 bit
+    bit_depth.option = 24 bit
+    bit_depth.default = "${bit_depth}"
+    #Cancel Button
+    cb.type = cancelbutton
+    cb.label = Cancel
+    "
 
-pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
-echo "${gui_conf}" > "${pashua_configfile}"
-pashua_run
-rm "${pashua_configfile}"
+    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    echo "${gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
 }
 pashua_run() {
     # Wrapper function for interfacing to Pashua. Written by Carsten
@@ -141,6 +185,15 @@ _master_gui
 } > "${config}"
 fi
 
+if [ "${runtype}" = "metadata" ] ; then
+_metadata_gui
+
+{
+    echo "originator=\"${originator}\""
+    echo "coding_history=\"${coding_history}\""
+} > "${bwf_config}"
+fi
+
 if [ -n ${DEVICE_NUMBER} ] ; then
     _lookup_sample_rate "${sample_rate}"
 else 
@@ -180,15 +233,28 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 
 if [ "${runtype}" = "passthrough" ] ; then
     ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a pcm_s16le -ar 44100 - |\
-    ffplay -window_title "Skookum Player" -f lavfi \
+    ffplay -window_title "Audio Recorder" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}"
     exit
 fi
 
-Echo "Please Input Item ID"
-read ITEM_ID
+_get_ITEM_ID
+
 mkfifo PIPE2REC
 ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
-ffplay -window_title "Skookum Player" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy "${output}"/"${ITEM_ID}".wav
+ffplay -window_title "Audio Recorder" -f lavfi \
+"amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
+
+# Embed metadata in BEXT
+echo "Preparing to embed metadata"
+echo ""
+if
+	(("${#ITEM_ID}" > 32));
+then
+	orig_ref="See description for Identifiers"
+else
+    orig_ref="${ITEM_ID}"
+fi
+
+bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
