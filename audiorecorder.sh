@@ -227,7 +227,7 @@ if [ "${runtype}" = "passthrough" ] ; then
     exit
 fi
 
-Echo "Please Input Item ID"
+echo "Please Input Item ID"
 read ITEM_ID
 mkfifo PIPE2REC
 ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
