@@ -8,7 +8,7 @@ Must have FFmpeg/FFplay and Pashua installed.
 
 ## Current quirks:
 
-1. There is a small hickup when the visualization window opens. This means you must wait until the window opens to press play on source material.
+1. There is a small hiccup when the visualization window opens. This means you must wait until the window opens to press play on source material.
 2. Don't use your built in microphone as a device without using headphones or muting your speakers othewise you will start a feedback loop that sounds like you are bringing about armageddon.
 3. Tested on 2014 iMac and 2013 Macbook Air.  There appeared to be some dropped samples on the Air.  No problems were detected on recordings made via the iMac.
 
