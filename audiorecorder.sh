@@ -28,25 +28,25 @@ _lookup_devices(){
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
-        SAMPLE_RATE_NUMERIC="44100"
-        ;;
+            SAMPLE_RATE_NUMERIC="44100"
+            ;;
         "48 kHz")
-        SAMPLE_RATE_NUMERIC="48000"
-        ;;
+            SAMPLE_RATE_NUMERIC="48000"
+            ;;
         "96 kHz")
-        SAMPLE_RATE_NUMERIC="96000"
-        ;;
+            SAMPLE_RATE_NUMERIC="96000"
+            ;;
     esac
 }
 
 _lookup_bit_depth(){
     case "${1}" in
         "16 bit")
-        CODEC="pcm_s16le"
-        ;;
+            CODEC="pcm_s16le"
+            ;;
         "24 bit")
-       CODEC="pcm_s24le"
-        ;;
+            CODEC="pcm_s24le"
+            ;;
     esac
 }
 
@@ -76,53 +76,53 @@ _metadata_gui(){
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
-    }
+}
 
 _master_gui(){
-_lookup_devices    
-gui_conf="
-# Set transparency: 0 is transparent, 1 is opaque
-*.transparency=0.95
-# Set window title
-*.title = Welcome to Audio Recorder!
-# intro text
-intro.width = 300
-intro.type = text
-intro.text = Hello
-#Output Location
-output.type = openbrowser
-output.label = Output Location
-output.default = "${output}"
-#Capture Device
-device.type = popup
-device.label = Select Audio Capture Device
-device.option = ${DEVICES[0]}
-device.option = ${DEVICES[1]}
-device.option = ${DEVICES[2]}
-device.option = ${DEVICES[3]}
-device.default = "${device}"
-#Sample Rate
-sample_rate.type = radiobutton
-sample_rate.label = Select Sample Rate
-sample_rate.option = 44.1 kHz
-sample_rate.option = 48 kHz
-sample_rate.option = 96 kHz
-sample_rate.default = "${sample_rate}"
-#Bit Depth
-bit_depth.type = radiobutton
-bit_depth.label = Select Bit Depth
-bit_depth.option = 16 bit
-bit_depth.option = 24 bit
-bit_depth.default = "${bit_depth}"
-#Cancel Button
-cb.type = cancelbutton
-cb.label = Cancel
-"
+    _lookup_devices    
+    gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Welcome to Audio Recorder!
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Hello
+    #Output Location
+    output.type = openbrowser
+    output.label = Output Location
+    output.default = "${output}"
+    #Capture Device
+    device.type = popup
+    device.label = Select Audio Capture Device
+    device.option = ${DEVICES[0]}
+    device.option = ${DEVICES[1]}
+    device.option = ${DEVICES[2]}
+    device.option = ${DEVICES[3]}
+    device.default = "${device}"
+    #Sample Rate
+    sample_rate.type = radiobutton
+    sample_rate.label = Select Sample Rate
+    sample_rate.option = 44.1 kHz
+    sample_rate.option = 48 kHz
+    sample_rate.option = 96 kHz
+    sample_rate.default = "${sample_rate}"
+    #Bit Depth
+    bit_depth.type = radiobutton
+    bit_depth.label = Select Bit Depth
+    bit_depth.option = 16 bit
+    bit_depth.option = 24 bit
+    bit_depth.default = "${bit_depth}"
+    #Cancel Button
+    cb.type = cancelbutton
+    cb.label = Cancel
+    "
 
-pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
-echo "${gui_conf}" > "${pashua_configfile}"
-pashua_run
-rm "${pashua_configfile}"
+    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    echo "${gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
 }
 pashua_run() {
     # Wrapper function for interfacing to Pashua. Written by Carsten
