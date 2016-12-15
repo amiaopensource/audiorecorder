@@ -235,6 +235,7 @@ if [ "${runtype}" = "passthrough" ] ; then
     ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a pcm_s16le -ar 44100 - |\
     ffplay -window_title "Audio Recorder" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}"
+    stty sane
     exit
 fi
 
@@ -258,3 +259,4 @@ else
 fi
 
 bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
+stty sane
