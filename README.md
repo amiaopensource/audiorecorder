@@ -2,7 +2,9 @@
 
 ## A work in progress to create a free tool for the calibration and recording of analog audio signals
 
-Current Usage: [-p] passthrough mode, [-e] edit config
+Can be installed via homebrew. `brew tap amiaopensource/amiaos` and `brew install audiorecorder`.
+
+Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
 
 Must have FFmpeg/FFplay and Pashua installed.
 
