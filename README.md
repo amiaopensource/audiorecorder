@@ -23,5 +23,9 @@ Includes peak meters, spectrum information (lines represent 1,5,10,15,20 kHz), a
 ## License
 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png" /></a><br />The Audio Recorder script and all associated documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
 
-Pashua is made available in accordance with the terms listed [here](https://www.bluem.net/pashua-docs-latest.html#faq.redistribution).
->"You are allowed to re-distribute Pashua (as an external application or by shipping a modified Pashua application bundle similar to the “Doubleclickable Example”) as long as your application is freeware or Open Source Software and, additionally, is not merely a free “add-on” to some commercial service you offer."
+BWF Metaedit
+
+>This code was created in 2010 for the Library of Congress and the other federal government agencies participating in the Federal Agencies Digitization Guidelines Initiative and it is in the public domain.
+
+Detailed BWF Metaedit License available [here](https://mediaarea.net/BWFMetaEdit/License).
+
