@@ -7,8 +7,6 @@ touch "${bwf_config}"
 . "$config"
 . "${bwf_config}"
 
-
-
 OPTIND=1
 while getopts "epm" opt ; do
     case "${opt}" in
@@ -91,7 +89,7 @@ _metadata_gui(){
 }
 
 _master_gui(){
-    _lookup_devices    
+    _lookup_devices
     gui_conf="
     # Set transparency: 0 is transparent, 1 is opaque
     *.transparency=0.95
@@ -158,57 +156,57 @@ pashua_run() {
     done
     if [ ! "$pashuapath" ] ; then
         echo "Error: Pashua is not found."
-                break 2
-            fi
-        encoding=""
-        # Get result
-        result=`"$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g'`
+        break 2
+    fi
+    encoding=""
+    # Get result
+    result=`"$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g'`
 
-        # Parse result
-        for line in $result ; do
-            key=`echo $line | sed 's/^\([^=]*\)=.*$/\1/'`
-            value=`echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g'`
-            varname=$key
-            varvalue="$value"
-            eval $varname='$varvalue'
-        done
+    # Parse result
+    for line in $result ; do
+        key=`echo $line | sed 's/^\([^=]*\)=.*$/\1/'`
+        value=`echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g'`
+        varname=$key
+        varvalue="$value"
+        eval $varname='$varvalue'
+    done
 } # pashua_run()
 
 if [ "${runtype}" = "edit" ] ; then
-_master_gui
+    _master_gui
 
-{
+    {
     echo "output=\"${output}\""
     echo "device=\"${device}\""
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
-} > "${config}"
+    } > "${config}"
 fi
 
 if [ "${runtype}" = "metadata" ] ; then
-_metadata_gui
+    _metadata_gui
 
-{
+    {
     echo "originator=\"${originator}\""
     echo "coding_history=\"${coding_history}\""
-} > "${bwf_config}"
+    } > "${bwf_config}"
 fi
 
 if [ -n ${DEVICE_NUMBER} ] ; then
     _lookup_sample_rate "${sample_rate}"
-else 
+else
     echo "No Sample Rate Specified.  Setting to 96kH."
     SAMPLE_RATE_NUMERIC="96000"
 fi
 if [ -n "${bit_depth}" ] ; then
     _lookup_bit_depth  "${bit_depth}"
-else 
+else
     echo "No Bit Depth Specified.  Setting to 24."
     CODEC="pcm_s24le"
 fi
 if [ -n "${device}" ] ; then
     DEVICE_NUMBER=$(echo "${device}" | cut -c 2)
-else 
+else
     echo "No Device Specified.  Attempting to Guess Device."
     DEVICE_NUMBER="0"
 fi
@@ -216,7 +214,6 @@ if [ -z "${output}" ] ; then
     echo "No Output Location Specified.  Setting Output to Desktop"
     output="~/Desktop"
 fi
-
 
 FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
@@ -246,14 +243,13 @@ ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "
 ffplay -window_title "Audio Recorder" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
-
 # Embed metadata in BEXT
 echo "Preparing to embed metadata"
 echo ""
 if
-	(("${#ITEM_ID}" > 32));
+    (("${#ITEM_ID}" > 32));
 then
-	orig_ref="See description for Identifiers"
+    orig_ref="See description for Identifiers"
 else
     orig_ref="${ITEM_ID}"
 fi
