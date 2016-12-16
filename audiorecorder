@@ -23,6 +23,7 @@ _lookup_devices(){
     IFS=',' read -r -a DEVICES <<< "$device_list"
     IFS="$OLDIFS"
 }
+
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
@@ -47,6 +48,7 @@ _lookup_bit_depth(){
             ;;
     esac
 }
+
 _get_ITEM_ID(){
     echo "Please Input Item ID or type Q to exit"
     read ITEM_ID
@@ -134,6 +136,7 @@ _master_gui(){
     pashua_run
     rm "${pashua_configfile}"
 }
+
 pashua_run() {
     # Wrapper function for interfacing to Pashua. Written by Carsten
     # Bluem <carsten@bluem.net> in 10/2003, modified in 12/2003 (including
@@ -182,7 +185,6 @@ if [ "${runtype}" = "edit" ] ; then
     echo "bit_depth=\"${bit_depth}\""
     } > "${config}"
 fi
-
 if [ "${runtype}" = "metadata" ] ; then
     _metadata_gui
 
@@ -191,7 +193,6 @@ if [ "${runtype}" = "metadata" ] ; then
     echo "coding_history=\"${coding_history}\""
     } > "${bwf_config}"
 fi
-
 if [ -n ${DEVICE_NUMBER} ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
@@ -227,7 +228,6 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[z],\
 [z]drawtext=fontfile=/Library/Fonts/Andale Mono.ttf: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
-
 if [ "${runtype}" = "passthrough" ] ; then
     ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a pcm_s16le -ar 44100 - |\
     ffplay -window_title "Audio Recorder" -f lavfi \
@@ -246,9 +246,7 @@ ffplay -window_title "Audio Recorder" -f lavfi \
 # Embed metadata in BEXT
 echo "Preparing to embed metadata"
 echo ""
-if
-    (("${#ITEM_ID}" > 32));
-then
+if (("${#ITEM_ID}" > 32)) ; then
     orig_ref="See description for Identifiers"
 else
     orig_ref="${ITEM_ID}"
