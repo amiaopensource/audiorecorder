@@ -118,6 +118,10 @@ _master_gui(){
     bit_depth.option = 16 bit
     bit_depth.option = 24 bit
     bit_depth.default = "${bit_depth}"
+    #Enable BWF
+    bwf.type = checkbox
+    bwf.label = Embed BWF Metadata
+    bwf.default = "${bwf}"
     #Cancel Button
     cb.type = cancelbutton
     cb.label = Cancel
@@ -184,6 +188,7 @@ if [ "${runtype}" = "edit" ] ; then
     echo "output=\"${output}\""
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
+    echo "bwf=\"${bwf}\""
     } > "${config}"
 fi
 if [ "${runtype}" = "metadata" ] ; then
@@ -244,9 +249,12 @@ ffplay -window_title "Audio Recorder" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
 # Embed metadata in BEXT
-echo "Preparing to embed metadata"
-echo ""
-_embed_bext
+if [ "${bwf}" = "1" ] ; then
+    echo "Preparing to embed metadata"
+    echo ""
+    _embed_bext
+fi
+
 stty sane
 rm -r PIPE2REC
 #Post Recording Stats
