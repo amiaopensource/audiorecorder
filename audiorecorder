@@ -184,6 +184,7 @@ if [ "${runtype}" = "metadata" ] ; then
     echo "coding_history=\"${coding_history}\""
     } > "${bwf_config}"
 fi
+
 if [ -n "${sample_rate}" ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
