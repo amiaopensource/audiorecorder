@@ -129,6 +129,16 @@ _master_gui(){
     rm "${pashua_configfile}"
 }
 
+_embed_bext(){
+    if (("${#ITEM_ID}" > 32)) ; then
+        orig_ref="See description for Identifiers"
+    else
+        orig_ref="${ITEM_ID}"
+    fi
+
+    bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
+}
+
 pashua_run() {
     # Wrapper function for interfacing to Pashua. Written by Carsten
     # Bluem <carsten@bluem.net> in 10/2003, modified in 12/2003 (including
@@ -236,13 +246,7 @@ ffplay -window_title "Audio Recorder" -f lavfi \
 # Embed metadata in BEXT
 echo "Preparing to embed metadata"
 echo ""
-if (("${#ITEM_ID}" > 32)) ; then
-    orig_ref="See description for Identifiers"
-else
-    orig_ref="${ITEM_ID}"
-fi
-
-bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
+_embed_bext
 stty sane
 rm -r PIPE2REC
 #Post Recording Stats
