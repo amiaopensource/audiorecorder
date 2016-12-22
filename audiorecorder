@@ -8,11 +8,12 @@ touch "${bwf_config}"
 . "${bwf_config}"
 
 OPTIND=1
-while getopts "epm" opt ; do
+while getopts "epmb:" opt ; do
     case "${opt}" in
         e) runtype="edit";;
         p) runtype="passthrough";;
         m) runtype="metadata";;
+        b) runtype="bext";;
         *)
     esac
 done
@@ -134,13 +135,15 @@ _master_gui(){
 }
 
 _embed_bext(){
+    echo "Preparing to embed metadata"
+    echo ""
     if (("${#ITEM_ID}" > 32)) ; then
         orig_ref="See description for Identifiers"
     else
         orig_ref="${ITEM_ID}"
     fi
 
-    bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
+    bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${BEXT_TARGET}"
 }
 
 pashua_run() {
@@ -230,6 +233,15 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[z],\
 [z]drawtext=fontfile=/Library/Fonts/Andale Mono.ttf: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
+# BEXT mode
+if [ "${runtype}" = "bext" ] ; then
+    ITEM_ID=$(echo $(basename "${2}") | cut -d'.' -f1)
+    BEXT_TARGET="${2}"
+    _embed_bext
+    exit 0
+fi
+
+# Passthrough mode
 if [ "${runtype}" = "passthrough" ] ; then
     rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 - |\
     ffplay -window_title "Audio Recorder" -f lavfi \
@@ -238,6 +250,7 @@ if [ "${runtype}" = "passthrough" ] ; then
     exit
 fi
 
+# Record Mode
 _get_ITEM_ID
 if [ -e PIPE2REC ] ; then
     rm -r PIPE2REC
@@ -250,8 +263,7 @@ ffplay -window_title "Audio Recorder" -f lavfi \
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
-    echo "Preparing to embed metadata"
-    echo ""
+    BEXT_TARGET="${output}/${ITEM_ID}.wav"
     _embed_bext
 fi
 
