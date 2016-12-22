@@ -84,7 +84,7 @@ _metadata_gui(){
     cb.label = Cancel
     "
 
-    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
@@ -105,14 +105,6 @@ _master_gui(){
     output.type = openbrowser
     output.label = Output Location
     output.default = "${output}"
-    #Capture Device
-    device.type = popup
-    device.label = Select Audio Capture Device
-    device.option = ${DEVICES[0]}
-    device.option = ${DEVICES[1]}
-    device.option = ${DEVICES[2]}
-    device.option = ${DEVICES[3]}
-    device.default = "${device}"
     #Sample Rate
     sample_rate.type = radiobutton
     sample_rate.label = Select Sample Rate
@@ -131,7 +123,7 @@ _master_gui(){
     cb.label = Cancel
     "
 
-    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
@@ -163,12 +155,12 @@ pashua_run() {
     fi
     encoding=""
     # Get result
-    result=`"$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g'`
+    result=$("$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g')
 
     # Parse result
     for line in $result ; do
-        key=`echo $line | sed 's/^\([^=]*\)=.*$/\1/'`
-        value=`echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g'`
+        key=$(echo $line | sed 's/^\([^=]*\)=.*$/\1/')
+        value=$(echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g')
         varname=$key
         varvalue="$value"
         eval $varname='$varvalue'
@@ -180,7 +172,6 @@ if [ "${runtype}" = "edit" ] ; then
 
     {
     echo "output=\"${output}\""
-    echo "device=\"${device}\""
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
     } > "${config}"
@@ -193,7 +184,8 @@ if [ "${runtype}" = "metadata" ] ; then
     echo "coding_history=\"${coding_history}\""
     } > "${bwf_config}"
 fi
-if [ -n ${DEVICE_NUMBER} ] ; then
+
+if [ -n "${sample_rate}" ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
     echo "No Sample Rate Specified.  Setting to 96kH."
@@ -205,12 +197,7 @@ else
     echo "No Bit Depth Specified.  Setting to 24."
     CODEC="pcm_s24le"
 fi
-if [ -n "${device}" ] ; then
-    DEVICE_NUMBER=$(echo "${device}" | cut -c 2)
-else
-    echo "No Device Specified.  Attempting to Guess Device."
-    DEVICE_NUMBER="0"
-fi
+
 if [ -z "${output}" ] ; then
     echo "No Output Location Specified.  Setting Output to Desktop"
     output="~/Desktop"
@@ -229,7 +216,7 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [z]drawtext=fontfile=/Library/Fonts/Andale Mono.ttf: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
 if [ "${runtype}" = "passthrough" ] ; then
-    ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a pcm_s16le -ar 44100 - |\
+    rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 - |\
     ffplay -window_title "Audio Recorder" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}"
     stty sane
@@ -237,9 +224,11 @@ if [ "${runtype}" = "passthrough" ] ; then
 fi
 
 _get_ITEM_ID
-
+if [ -e PIPE2REC ] ; then
+    rm -r PIPE2REC
+fi
 mkfifo PIPE2REC
-ffmpeg -f avfoundation -i "none:"${DEVICE_NUMBER}"" -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
+rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Audio Recorder" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
 
@@ -254,3 +243,4 @@ fi
 
 bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
 stty sane
+rm -r PIPE2REC
