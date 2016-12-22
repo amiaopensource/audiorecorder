@@ -84,7 +84,7 @@ _metadata_gui(){
     cb.label = Cancel
     "
 
-    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
@@ -123,7 +123,7 @@ _master_gui(){
     cb.label = Cancel
     "
 
-    pashua_configfile=`/usr/bin/mktemp /tmp/pashua_XXXXXXXXX`
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
@@ -155,12 +155,12 @@ pashua_run() {
     fi
     encoding=""
     # Get result
-    result=`"$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g'`
+    result=$("$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g')
 
     # Parse result
     for line in $result ; do
-        key=`echo $line | sed 's/^\([^=]*\)=.*$/\1/'`
-        value=`echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g'`
+        key=$(echo $line | sed 's/^\([^=]*\)=.*$/\1/')
+        value=$(echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g')
         varname=$key
         varvalue="$value"
         eval $varname='$varvalue'
