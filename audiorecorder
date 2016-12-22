@@ -224,7 +224,9 @@ if [ "${runtype}" = "passthrough" ] ; then
 fi
 
 _get_ITEM_ID
-rm -r PIPE2REC
+if [ -e PIPE2REC ] ; then
+    rm -r PIPE2REC
+fi
 mkfifo PIPE2REC
 rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Audio Recorder" -f lavfi \
@@ -241,3 +243,4 @@ fi
 
 bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
 stty sane
+rm -r PIPE2REC
