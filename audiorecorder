@@ -7,13 +7,22 @@ touch "${bwf_config}"
 . "$config"
 . "${bwf_config}"
 
+_usage(){
+    echo "Usage: $(basename "${0}") [ -h | -e | -p | -m ]"
+    echo "  -h  display this help menu"
+    echo "  -e  edit"
+    echo "  -p  passthrough"
+    echo "  -m  metadata"
+}
+
 OPTIND=1
-while getopts "epm" opt ; do
+while getopts ":hepm" opt ; do
     case "${opt}" in
-        e) runtype="edit";;
-        p) runtype="passthrough";;
-        m) runtype="metadata";;
-        *)
+        h) _usage ; exit 0 ;;
+        e) runtype="edit" ;;
+        p) runtype="passthrough" ;;
+        m) runtype="metadata" ;;
+        *) echo "Error: bad option -${OPTARG}" ; _usage ; exit 1 ;;
     esac
 done
 
@@ -52,7 +61,7 @@ _lookup_bit_depth(){
 _get_ITEM_ID(){
     echo "Please Input Item ID or type Q to exit"
     read ITEM_ID
-    if [ "${ITEM_ID}" = "Q" ] || [ "${ITEM_ID}" = "q" ] ; then
+    if [[ "${ITEM_ID}" = [Qq] ]] ; then
         echo "Goodbye!"
         exit 0
     fi
