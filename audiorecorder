@@ -292,4 +292,7 @@ fi
 ASTATS=$(cat "${ASTATS_OUT}" | tail -n -8 | cut -d']' -f2 | cut -c 2- | head -n 4)
 echo -e "\033[104mLevels from recorded file are:\033[0m"
 echo -e "\033[104m${ASTATS}\033[0m"
+# Preview File
+mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}/${ITEM_ID}.wav"
+
 #Cascadia Now!
