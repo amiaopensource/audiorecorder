@@ -132,6 +132,12 @@ _master_gui(){
     bwf.type = checkbox
     bwf.label = Embed BWF Metadata
     bwf.default = "${bwf}"
+    #Enable Trim
+    trim.type = radiobutton
+    trim.label = Trim Silence
+    trim.option = Off
+    trim.option = Auto
+    trim.default = "${trim}"
     #Cancel Button
     cb.type = cancelbutton
     cb.label = Cancel
@@ -201,6 +207,7 @@ if [ "${runtype}" = "edit" ] ; then
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
     echo "bwf=\"${bwf}\""
+    echo "trim=\"${trim}\""
     } > "${config}"
 fi
 if [ "${runtype}" = "metadata" ] ; then
@@ -270,13 +277,7 @@ mkfifo PIPE2REC
 ASTATS_OUT=$(mktemp /tmp/temp.XXXX)
 rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Audio Recorder" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
-
-# Embed metadata in BEXT
-if [ "${bwf}" = "1" ] ; then
-    BEXT_TARGET="${output}/${ITEM_ID}.wav"
-    _embed_bext
-fi
+"amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto "${output}"/"${ITEM_ID}".wav
 
 # Cleanup
 stty sane
@@ -293,6 +294,25 @@ ASTATS=$(cat "${ASTATS_OUT}" | tail -n -8 | cut -d']' -f2 | cut -c 2- | head -n 
 echo -e "\033[104mLevels from recorded file are:\033[0m"
 echo -e "\033[104m${ASTATS}\033[0m"
 # Preview File
-mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}/${ITEM_ID}.wav"
+if [ "${trim}" = "Auto" ] ; then
+    Echo "Press Return to listen to preview of auto-trimmed file"
+    read null
+    mpv "${output}/${ITEM_ID}.wav" --force-window  --keep-open=yes --title="Trim Preview" --geometry=600x400 --af=lavfi=[silenceremove=1:0.5:-65dB:1:0.5:-65dB]
+    echo "Press Y to trim file with these settings?"
+    read TRIM_RESPONSE
+    if [[ "${TRIM_RESPONSE}" = [Yy] ]] ; then
+        ffmpeg -i "${output}/${ITEM_ID}.wav" -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -af silenceremove=1:0.5:-65dB:1:0.5:-65dB "${output}/${ITEM_ID}_trim.wav"
+    fi
+else
+    Echo "Press Return to listen to recorded file"
+    read null
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}/${ITEM_ID}.wav"
+fi
+
+# Embed metadata in BEXT
+if [ "${bwf}" = "1" ] ; then
+    BEXT_TARGET="${output}/${ITEM_ID}.wav"
+    _embed_bext
+fi
 
 #Cascadia Now!
