@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#Cascadia Now!
 config="$HOME/.$(basename "${0}").conf"
 bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
 touch "${config}"
@@ -13,6 +12,7 @@ _usage(){
     echo "  -e  edit"
     echo "  -p  passthrough"
     echo "  -m  metadata"
+    echo "  -b  bext"
 }
 
 OPTIND=1
@@ -292,3 +292,4 @@ fi
 ASTATS=$(cat "${ASTATS_OUT}" | tail -n -8 | cut -d']' -f2 | cut -c 2- | head -n 4)
 echo -e "\033[104mLevels from recorded file are:\033[0m"
 echo -e "\033[104m${ASTATS}\033[0m"
+#Cascadia Now!
