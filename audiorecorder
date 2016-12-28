@@ -297,11 +297,11 @@ echo -e "\033[104m${ASTATS}\033[0m"
 if [ "${trim}" = "Auto" ] ; then
     Echo "Press Return to listen to preview of auto-trimmed file"
     read null
-    mpv "${output}/${ITEM_ID}.wav" --force-window  --keep-open=yes --title="Trim Preview" --geometry=600x400 --af=lavfi=[silenceremove=1:0.5:-65dB:1:0.5:-65dB]
+    mpv "${output}/${ITEM_ID}.wav" --force-window  --keep-open=yes --title="Trim Preview" --geometry=600x400 --af=lavfi=[silenceremove=1:0.5:-55dB:1:0.5:-55dB]
     echo "Press Y to trim file with these settings?"
     read TRIM_RESPONSE
     if [[ "${TRIM_RESPONSE}" = [Yy] ]] ; then
-        ffmpeg -i "${output}/${ITEM_ID}.wav" -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -af silenceremove=1:0.5:-65dB:1:0.5:-65dB "${output}/${ITEM_ID}_trim.wav"
+        ffmpeg -i "${output}/${ITEM_ID}.wav" -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -af silenceremove=1:0.5:-55dB:1:0.5:-55dB "${output}/${ITEM_ID}_trim.wav"
     fi
 else
     Echo "Press Return to listen to recorded file"
