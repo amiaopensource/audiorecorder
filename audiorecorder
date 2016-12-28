@@ -150,7 +150,7 @@ _master_gui(){
 }
 
 _embed_bext(){
-    echo "Preparing to embed metadata"
+    echo "Preparing to embed metadata in ${BEXT_TARGET}"
     echo ""
     if (("${#ITEM_ID}" > 32)) ; then
         orig_ref="See description for Identifiers"
@@ -313,6 +313,10 @@ fi
 if [ "${bwf}" = "1" ] ; then
     BEXT_TARGET="${output}/${ITEM_ID}.wav"
     _embed_bext
+    if [ -e "${output}/${ITEM_ID}_trim.wav" ] ; then
+        BEXT_TARGET="${output}/${ITEM_ID}_trim.wav"
+        _embed_bext
+    fi
 fi
 
 #Cascadia Now!
