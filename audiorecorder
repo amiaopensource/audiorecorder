@@ -27,13 +27,6 @@ while getopts ":hepmb" opt ; do
     esac
 done
 
-_lookup_devices(){
-    OLDIFS="$IFS"
-    device_list=("$(ffmpeg -hide_banner -f avfoundation -list_devices true -i "" -f null /dev/null 2>&1 | cut -d ' ' -f6- | sed -e                  '1,/AVFoundation audio devices:/d' | grep -v '^$'| tr '\n' ',' )")
-    IFS=',' read -r -a DEVICES <<< "$device_list"
-    IFS="$OLDIFS"
-}
-
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
@@ -72,6 +65,14 @@ _get_ITEM_ID(){
     fi
 }
 
+_destination_check(){
+    if [ -z "${output}" ] || [ ! -d "${output}" ] ; then
+        echo "Please enter a valid output directory"
+        read -r output
+        _destination_check
+    fi
+}
+
 _metadata_gui(){
     gui_conf="
     # Set transparency: 0 is transparent, 1 is opaque
@@ -101,7 +102,6 @@ _metadata_gui(){
 }
 
 _master_gui(){
-    _lookup_devices
     gui_conf="
     # Set transparency: 0 is transparent, 1 is opaque
     *.transparency=0.95
@@ -132,12 +132,6 @@ _master_gui(){
     bwf.type = checkbox
     bwf.label = Embed BWF Metadata
     bwf.default = "${bwf}"
-    #Enable Trim
-    trim.type = radiobutton
-    trim.label = Trim Silence
-    trim.option = Off
-    trim.option = Auto
-    trim.default = "${trim}"
     #Cancel Button
     cb.type = cancelbutton
     cb.label = Cancel
@@ -246,7 +240,6 @@ if [ "${runtype}" = "edit" ] ; then
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
     echo "bwf=\"${bwf}\""
-    echo "trim=\"${trim}\""
     } > "${config}"
 fi
 if [ "${runtype}" = "metadata" ] ; then
@@ -258,6 +251,7 @@ if [ "${runtype}" = "metadata" ] ; then
     } > "${bwf_config}"
 fi
 
+#Verify and configure
 if [ -n "${sample_rate}" ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
@@ -270,11 +264,8 @@ else
     echo "No Bit Depth Specified.  Setting to 24."
     CODEC="pcm_s24le"
 fi
+_destination_check
 
-if [ -z "${output}" ] ; then
-    echo "No Output Location Specified.  Setting Output to Desktop"
-    output="~/Desktop"
-fi
 
 FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
