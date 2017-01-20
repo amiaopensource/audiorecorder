@@ -266,7 +266,6 @@ else
 fi
 _destination_check
 
-
 FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
 [a]showfreqs=mode=bar:cmode=separate:size=300x300:colors=magenta|yellow[a1],\
