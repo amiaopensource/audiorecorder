@@ -149,6 +149,45 @@ _master_gui(){
     rm "${pashua_configfile}"
 }
 
+_post_digitization_gui(){
+    post_gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Edit Metadata Values
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Hello
+    #Preview
+    preview.type = button
+    preview.label = Preview
+    #Trim Preview
+    trim_preview.type = button
+    trim_preview.label = Preview Trim
+    #Trim
+    trim.type = button
+    trim.label = Trim 
+    "
+
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
+    echo "${post_gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
+    
+    if [ "${preview}" = "1" ] ; then
+        _preview_file && _post_digitization_gui
+    fi
+    
+    if [ "${trim_preview}" = "1" ] ; then
+        _preview_file && _post_digitization_gui
+    fi
+    if [ "${trim}" = "1" ] ; then
+        _trim_file && _post_digitization_gui
+    fi
+    
+}
+
 _embed_bext(){
     echo "Preparing to embed metadata in ${BEXT_TARGET}"
     echo ""
@@ -293,21 +332,34 @@ fi
 ASTATS=$(cat "${ASTATS_OUT}" | tail -n -8 | cut -d']' -f2 | cut -c 2- | head -n 4)
 echo -e "\033[1;32mLevels from recorded file are:\033[0m"
 echo -e "\033[1;32m${ASTATS}\033[0m"
-# Preview File
-if [ "${trim}" = "Auto" ] ; then
-    Echo "Press Return to listen to preview of auto-trimmed file"
-    read null
-    mpv "${output}/${ITEM_ID}.wav" --force-window  --keep-open=yes --title="Trim Preview" --geometry=600x400 --af=lavfi=[silenceremove=1:0.5:-55dB:1:0.5:-55dB]
-    echo "Press Y to trim file with these settings?"
-    read TRIM_RESPONSE
-    if [[ "${TRIM_RESPONSE}" = [Yy] ]] ; then
-        ffmpeg -i "${output}/${ITEM_ID}.wav" -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -af silenceremove=1:0.5:-55dB:1:0.5:-55dB "${output}/${ITEM_ID}_trim.wav"
-    fi
-else
-    Echo "Press Return to listen to recorded file"
-    read null
+
+
+#Post Record Functions
+
+#Preview
+_preview_file(){
     mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}/${ITEM_ID}.wav"
-fi
+}
+
+_preview_trim(){
+    SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}/${ITEM_ID}.wav",silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
+    AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
+    AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 --start=+"${AUDIO_START}" --length=$(echo ${AUDIO_END} - ${AUDIO_START} | bc) "${output}/${ITEM_ID}.wav"
+}
+
+_trim_file(){
+    if [ -z "${SILENCE}" ] ; then
+        SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}/${ITEM_ID}.wav",silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
+        AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
+        AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
+    fi
+    ffmpeg -ss "${AUDIO_START}" -i /Users/aweaver/Desktop/waseumc_barton15006_exotics.mp3 -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}/${ITEM_ID}_trim.wav"        
+}
+
+
+# Preview File
+_post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
