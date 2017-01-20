@@ -180,7 +180,7 @@ _post_digitization_gui(){
     fi
     
     if [ "${trim_preview}" = "1" ] ; then
-        _preview_file && _post_digitization_gui
+        _preview_trim && _post_digitization_gui
     fi
     if [ "${trim}" = "1" ] ; then
         _trim_file && _post_digitization_gui
@@ -338,23 +338,23 @@ echo -e "\033[1;32m${ASTATS}\033[0m"
 
 #Preview
 _preview_file(){
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}/${ITEM_ID}.wav"
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}"/"${ITEM_ID}".wav
 }
 
 _preview_trim(){
-    SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}/${ITEM_ID}.wav",silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
+    SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}"/"${ITEM_ID}".wav,silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
     AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
     AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 --start=+"${AUDIO_START}" --length=$(echo ${AUDIO_END} - ${AUDIO_START} | bc) "${output}/${ITEM_ID}.wav"
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 --start=+"${AUDIO_START}" --length=$(echo ${AUDIO_END} - ${AUDIO_START} | bc) "${output}"/"${ITEM_ID}".wav
 }
 
 _trim_file(){
     if [ -z "${SILENCE}" ] ; then
-        SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}/${ITEM_ID}.wav",silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
+        SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}"/"${ITEM_ID}".wav,silencedetect=n=-50dB:d=5 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
         AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
         AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
     fi
-    ffmpeg -ss "${AUDIO_START}" -i /Users/aweaver/Desktop/waseumc_barton15006_exotics.mp3 -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}/${ITEM_ID}_trim.wav"        
+    ffmpeg -ss "${AUDIO_START}" -i /Users/aweaver/Desktop/waseumc_barton15006_exotics.mp3 -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav      
 }
 
 
