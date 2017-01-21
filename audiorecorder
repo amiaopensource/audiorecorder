@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#Cascadia Now!
 config="$HOME/.$(basename "${0}").conf"
 bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
 touch "${config}"
@@ -8,30 +7,25 @@ touch "${bwf_config}"
 . "${bwf_config}"
 
 _usage(){
-    echo "Usage: $(basename "${0}") [ -h | -e | -p | -m ]"
+    echo "Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]"
     echo "  -h  display this help menu"
     echo "  -e  edit"
     echo "  -p  passthrough"
     echo "  -m  metadata"
+    echo "  -b  bext"
 }
 
 OPTIND=1
-while getopts ":hepm" opt ; do
+while getopts ":hepmb" opt ; do
     case "${opt}" in
         h) _usage ; exit 0 ;;
         e) runtype="edit" ;;
         p) runtype="passthrough" ;;
         m) runtype="metadata" ;;
+        b) runtype="bext";;
         *) echo "Error: bad option -${OPTARG}" ; _usage ; exit 1 ;;
     esac
 done
-
-_lookup_devices(){
-    OLDIFS="$IFS"
-    device_list=("$(ffmpeg -hide_banner -f avfoundation -list_devices true -i "" -f null /dev/null 2>&1 | cut -d ' ' -f6- | sed -e                  '1,/AVFoundation audio devices:/d' | grep -v '^$'| tr '\n' ',' )")
-    IFS=',' read -r -a DEVICES <<< "$device_list"
-    IFS="$OLDIFS"
-}
 
 _lookup_sample_rate(){
     case "${1}" in
@@ -71,6 +65,14 @@ _get_ITEM_ID(){
     fi
 }
 
+_destination_check(){
+    if [ -z "${output}" ] || [ ! -d "${output}" ] ; then
+        echo "Please enter a valid output directory"
+        read -r output
+        _destination_check
+    fi
+}
+
 _metadata_gui(){
     gui_conf="
     # Set transparency: 0 is transparent, 1 is opaque
@@ -100,7 +102,6 @@ _metadata_gui(){
 }
 
 _master_gui(){
-    _lookup_devices
     gui_conf="
     # Set transparency: 0 is transparent, 1 is opaque
     *.transparency=0.95
@@ -127,6 +128,10 @@ _master_gui(){
     bit_depth.option = 16 bit
     bit_depth.option = 24 bit
     bit_depth.default = "${bit_depth}"
+    #Enable BWF
+    bwf.type = checkbox
+    bwf.label = Embed BWF Metadata
+    bwf.default = "${bwf}"
     #Cancel Button
     cb.type = cancelbutton
     cb.label = Cancel
@@ -136,6 +141,57 @@ _master_gui(){
     echo "${gui_conf}" > "${pashua_configfile}"
     pashua_run
     rm "${pashua_configfile}"
+}
+
+_post_digitization_gui(){
+    post_gui_conf="
+    # Set transparency: 0 is transparent, 1 is opaque
+    *.transparency=0.95
+    # Set window title
+    *.title = Press ok to exit
+    # intro text
+    intro.width = 300
+    intro.type = text
+    intro.text = Select Post-digitization options
+    #Preview
+    preview.type = button
+    preview.label = Preview
+    #Trim Preview
+    trim_preview.type = button
+    trim_preview.label = Preview Trim
+    #Trim
+    trim.type = button
+    trim.label = Trim 
+    "
+
+    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
+    echo "${post_gui_conf}" > "${pashua_configfile}"
+    pashua_run
+    rm "${pashua_configfile}"
+    
+    if [ "${preview}" = "1" ] ; then
+        _preview_file && _post_digitization_gui
+    fi
+    
+    if [ "${trim_preview}" = "1" ] ; then
+        _preview_trim && _post_digitization_gui
+    fi
+    if [ "${trim}" = "1" ] ; then
+        _trim_file && _post_digitization_gui
+    fi
+    
+}
+
+_embed_bext(){
+    echo "Preparing to embed metadata in ${BEXT_TARGET}"
+    echo ""
+    if (("${#ITEM_ID}" > 32)) ; then
+        orig_ref="See description for Identifiers"
+    else
+        orig_ref="${ITEM_ID}"
+    fi
+
+    bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${BEXT_TARGET}"
 }
 
 pashua_run() {
@@ -183,6 +239,7 @@ if [ "${runtype}" = "edit" ] ; then
     echo "output=\"${output}\""
     echo "sample_rate=\"${sample_rate}\""
     echo "bit_depth=\"${bit_depth}\""
+    echo "bwf=\"${bwf}\""
     } > "${config}"
 fi
 if [ "${runtype}" = "metadata" ] ; then
@@ -194,6 +251,7 @@ if [ "${runtype}" = "metadata" ] ; then
     } > "${bwf_config}"
 fi
 
+#Verify and configure
 if [ -n "${sample_rate}" ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
@@ -206,11 +264,7 @@ else
     echo "No Bit Depth Specified.  Setting to 24."
     CODEC="pcm_s24le"
 fi
-
-if [ -z "${output}" ] ; then
-    echo "No Output Location Specified.  Setting Output to Desktop"
-    output="~/Desktop"
-fi
+_destination_check
 
 FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
@@ -218,12 +272,21 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [a1]drawbox=12:0:3:300:white@0.2[a2],[a2]drawbox=66:0:3:300:white@0.2[a3],[a3]drawbox=135:0:3:300:white@0.2[a4],[a4]drawbox=202:0:3:300:white@0.2[a5],[a5]drawbox=271:0:3:300:white@0.2[aa],\
 [b]avectorscope=s=300x300:r=30:zoom=5[b1],\
 [b1]drawgrid=x=150:y=150:c=white@0.3[bb],\
-[c]showspectrum=s=400x600:mode=combined:color=rainbow:scale=lin:saturation=4[cc],\
+[c]showspectrum=s=400x600:slide=scroll:mode=combined:color=rainbow:scale=lin:saturation=4[cc],\
 [d]astats=metadata=1:reset=1,adrawgraph=lavfi.astats.Overall.Peak_level:max=0:min=-30.0:size=700x256:bg=Black[dd],\
 [dd]drawbox=0:0:700:42:hotpink@0.2:t=42[ddd],\
 [aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[z],\
 [z]drawtext=fontfile=/Library/Fonts/Andale Mono.ttf: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
+# BEXT mode
+if [ "${runtype}" = "bext" ] ; then
+    ITEM_ID=$(echo $(basename "${2}") | cut -d'.' -f1)
+    BEXT_TARGET="${2}"
+    _embed_bext
+    exit 0
+fi
+
+# Passthrough mode
 if [ "${runtype}" = "passthrough" ] ; then
     rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 - |\
     ffplay -window_title "Audio Recorder" -f lavfi \
@@ -232,24 +295,76 @@ if [ "${runtype}" = "passthrough" ] ; then
     exit
 fi
 
+# Record Mode
 _get_ITEM_ID
+
 if [ -e PIPE2REC ] ; then
     rm -r PIPE2REC
 fi
+
 mkfifo PIPE2REC
-rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
+ASTATS_OUT=$(mktemp /tmp/temp.XXXX)
+rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
 ffplay -window_title "Audio Recorder" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" | ffmpeg -i PIPE2REC -c copy -rf64 auto "${output}"/"${ITEM_ID}".wav
+"amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto "${output}"/"${ITEM_ID}".wav
 
-# Embed metadata in BEXT
-echo "Preparing to embed metadata"
-echo ""
-if (("${#ITEM_ID}" > 32)) ; then
-    orig_ref="See description for Identifiers"
-else
-    orig_ref="${ITEM_ID}"
-fi
-
-bwfmetaedit --reject-overwrite --Description="${ITEM_ID}".wav --Originator="${originator}" --OriginatorReference="${orig_ref}" --History="${coding_history}" --IARL="${originator}" --MD5-Embed --OriginationDate=$(date "+%Y-%m-%d") --OriginationTime=$(date "+%H:%M:%S") "${output}"/"${ITEM_ID}".wav
+# Cleanup
 stty sane
 rm -r PIPE2REC
+
+# Post Recording Stats
+PEAK_COUNT=$(cat "${ASTATS_OUT}" | tail -n -8 | grep "Peak count" | cut -d':' -f2 | cut -c 2- | cut -d'.' -f1)
+
+if [ "${PEAK_COUNT}" -gt "4" ] ; then
+    echo -e "\033[101mWarning: There are $((${PEAK_COUNT} - 2)) samples with peaked levels in this recording.\033[0m"
+fi
+
+ASTATS=$(cat "${ASTATS_OUT}" | tail -n -8 | cut -d']' -f2 | cut -c 2- | head -n 4)
+echo -e "\033[1;32mLevels from recorded file are:\033[0m"
+echo -e "\033[1;32m${ASTATS}\033[0m"
+
+#Post Record Functions
+_preview_file(){
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}"/"${ITEM_ID}".wav
+}
+
+_silence_detect(){
+    SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}"/"${ITEM_ID}".wav,silencedetect=noise=-57dB:d=3 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
+    AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
+    AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
+}
+
+_preview_trim(){
+    _silence_detect
+    if [ -z "${SILENCE}" ] ; then
+        echo "No Silence Detected"
+    else
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 --start=+"${AUDIO_START}" --length=$(echo ${AUDIO_END} - ${AUDIO_START} | bc) "${output}"/"${ITEM_ID}".wav
+    fi
+}
+
+_trim_file(){
+    if [ -z "${SILENCE}" ] ; then
+       _silence_detect
+    fi
+    if [ -z "${SILENCE}" ] ; then
+        echo "No Silence Detected"
+    else
+    ffmpeg -ss "${AUDIO_START}" -i /Users/aweaver/Desktop/waseumc_barton15006_exotics.mp3 -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
+    fi      
+}
+
+# Loads post digitization option GUI
+_post_digitization_gui
+
+# Embed metadata in BEXT
+if [ "${bwf}" = "1" ] ; then
+    BEXT_TARGET="${output}/${ITEM_ID}.wav"
+    _embed_bext
+    if [ -e "${output}/${ITEM_ID}_trim.wav" ] ; then
+        BEXT_TARGET="${output}/${ITEM_ID}_trim.wav"
+        _embed_bext
+    fi
+fi
+
+#Cascadia Now!
