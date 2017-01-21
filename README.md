@@ -8,14 +8,15 @@ Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for B
 
 Must have FFmpeg/FFplay and Pashua installed.
 
-## Current quirks:
-
+**01/20/17 UPDATE**: Initial post digitization functions have been included via a basic GUI.  These include ability to preview file with and without silence trimming, and an option to create a silence trimmed version of file. The spectrograph has also been changed to scroll for easier viewability. Further testing has not detected any dropped samples either audibly or via Wavelab global analysis. 
 
 **12/22/16 UPDATE**: Current build was tested with a 40 minute transfer on the 2013 Macbook Air with no dropped samples detected either audibly or via Wavelab's global analysis tool.  Testing continues...
 
+## Current quirks:
+
 1. There is a small hiccup when the visualization window opens. This means you must wait until the window opens to press play on source material.
 2. Don't use your built in microphone as a device without using headphones or muting your speakers othewise you will start a feedback loop that sounds like you are bringing about armageddon.
-3. -SEE UPDATE-Tested on 2014 iMac and 2013 Macbook Air.  There appeared to be some dropped samples on the Air.  No problems were detected on recordings made via the iMac.
+3. -SEE UPDATES-Tested on 2014 iMac and 2013 Macbook Air.  There appeared to be some dropped samples on the Air.  No problems were detected on recordings made via the iMac.
 4. The signal information in the CLI by sox is for the stream that is being piped into FFplay, so things like peaked audio warnings and levels will be accurate, but the displayed sample rate and depth are not the ones being used in the recorded file.
 
 ## Current Window
