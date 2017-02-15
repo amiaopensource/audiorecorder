@@ -374,7 +374,8 @@ _trim_file(){
     if [ -z "${SILENCE}" ] ; then
         echo "No Silence Detected"
     else
-    ffmpeg -ss "${AUDIO_START}" -i "${output}"/"${ITEM_ID}".wav -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
+    TRIM_START=$(date -j -v0H -f %s "${AUDIO_START}"  "+%H:%M:%S" 2> /dev/null)
+    ffmpeg -ss "${TRIM_START}" -i "${output}"/"${ITEM_ID}".wav -t $(echo ${AUDIO_END} - ${AUDIO_START} +1 | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
     fi      
 }
 
@@ -383,10 +384,10 @@ _post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
-    BEXT_TARGET="${output}/${ITEM_ID}.wav"
+    BEXT_TARGET="${output}"/"${ITEM_ID}.wav"
     _embed_bext
-    if [ -e "${output}/${ITEM_ID}_trim.wav" ] ; then
-        BEXT_TARGET="${output}/${ITEM_ID}_trim.wav"
+    if [ -e "${output}"/"${ITEM_ID}_trim.wav" ] ; then
+        BEXT_TARGET="${output}"/"${ITEM_ID}_trim.wav"
         _embed_bext
     fi
 fi
