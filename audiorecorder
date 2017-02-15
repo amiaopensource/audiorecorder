@@ -286,7 +286,7 @@ fi
 if [ -n "${channel_layout}" ] ; then
     _lookup_channel_layout "${channel_layout}"
 else
-    echo "No Channel Layout Specified. Setting to Stereo"
+    echo "No Channel Layout Specified. Setting Input to Channels 1 and 2"
 fi
 _destination_check
 
