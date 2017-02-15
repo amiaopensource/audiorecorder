@@ -374,7 +374,7 @@ _trim_file(){
     if [ -z "${SILENCE}" ] ; then
         echo "No Silence Detected"
     else
-    ffmpeg -ss "${AUDIO_START}" -i /Users/aweaver/Desktop/waseumc_barton15006_exotics.mp3 -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
+    ffmpeg -ss "${AUDIO_START}" -i "${output}"/"${ITEM_ID}".wav -t $(echo ${AUDIO_END} - ${AUDIO_START} | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
     fi      
 }
 
