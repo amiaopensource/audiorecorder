@@ -287,6 +287,7 @@ if [ -n "${channel_layout}" ] ; then
     _lookup_channel_layout "${channel_layout}"
 else
     echo "No Channel Layout Specified. Setting Input to Channels 1 and 2"
+    channel_layout="1 and 2"
 fi
 _destination_check
 
@@ -312,8 +313,8 @@ fi
 
 # Passthrough mode
 if [ "${runtype}" = "passthrough" ] ; then
-    rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 ${CHANNELS} - |\
-    ffplay -window_title "Audio Recorder" -f lavfi \
+    rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 - |\
+    ffplay -window_title "Current Settings Will Record Channel(s): ${channel_layout}" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}"
     stty sane
     exit
@@ -328,9 +329,9 @@ fi
 
 mkfifo PIPE2REC
 ASTATS_OUT=$(mktemp /tmp/temp.XXXX)
-rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment=""  ${CHANNELS} -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100  ${CHANNELS} - |\
-ffplay -window_title "Audio Recorder" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto "${output}"/"${ITEM_ID}".wav
+rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 131072 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 - |\
+ffplay -window_title "Currently Recording Channel(s): ${channel_layout}" -f lavfi \
+"amovie='pipe\:0',${FILTER_CHAIN}" 2>"${ASTATS_OUT}"| ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto ${CHANNELS} "${output}"/"${ITEM_ID}".wav
 
 # Cleanup
 stty sane
