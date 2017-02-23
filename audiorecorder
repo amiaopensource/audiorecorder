@@ -55,11 +55,11 @@ _lookup_bit_depth(){
 _lookup_channel_layout(){
     case "${1}" in
         "1")
-        CHANNELS="-map_channel 0.0.0"
-        ;;
+            CHANNELS="-map_channel 0.0.0"
+            ;;
         "2")
-        CHANNELS="-map_channel 0.0.1"
-        ;;
+            CHANNELS="-map_channel 0.0.1"
+            ;;
     esac
 }
 
