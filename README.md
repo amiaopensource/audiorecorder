@@ -7,6 +7,7 @@ Can be installed via homebrew. `brew tap amiaopensource/amiaos` and `brew instal
 Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
 
 **2/23/17 UPDATE**: Due to some issues that were reported with OSX 10.12.03, some changes to buffering have been made and are currently being tested.
+
 **2/15/17 UPDATE**: Ability to select which channel to record has been added to the GUI. This option was tested with a 25 minute ingest on 2013 Macbook Air with no dropped samples detected audibly or vie Wavelab global analysis.  Some glitches with file trimming were resolved.
 
 **01/20/17 UPDATE**: Initial post digitization functions have been included via a basic GUI.  These include ability to preview file with and without silence trimming, and an option to create a silence trimmed version of file. The spectrograph has also been changed to scroll for easier viewability. Further testing has not detected any dropped samples either audibly or via Wavelab global analysis. 
