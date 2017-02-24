@@ -6,15 +6,15 @@ Can be installed via homebrew. `brew tap amiaopensource/amiaos` and `brew instal
 
 Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
 
-**2/24/17 UPDATE**: Changes appear to have been successful for adapting audiorecorder to OSX 10.12.03.  In testing it was discovered that audiorecorder has issues with A/D converters that have a large number of output tracks (such as sixteen as opposed to two).  Current audiorecorder head appears to be stable for two track A/D converters and testing is underway to expand its ability to deal with larger multi-track converters.
+**2017-02-24 UPDATE**: Changes appear to have been successful for adapting audiorecorder to macOS 10.12.03.  In testing it was discovered that audiorecorder has issues with A/D converters that have a large number of output tracks (such as sixteen as opposed to two).  Current audiorecorder head appears to be stable for two track A/D converters and testing is underway to expand its ability to deal with larger multi-track converters.
 
-**2/23/17 UPDATE**: Due to some issues that were reported with OSX 10.12.03, some changes to buffering have been made and are currently being tested.
+**2017-02-23 UPDATE**: Due to some issues that were reported with macOS 10.12.03, some changes to buffering have been made and are currently being tested.
 
-**2/15/17 UPDATE**: Ability to select which channel to record has been added to the GUI. This option was tested with a 25 minute ingest on 2013 Macbook Air with no dropped samples detected audibly or vie Wavelab global analysis.  Some glitches with file trimming were resolved.
+**2017-02-15 UPDATE**: Ability to select which channel to record has been added to the GUI. This option was tested with a 25 minute ingest on 2013 Macbook Air with no dropped samples detected audibly or vie Wavelab global analysis.  Some glitches with file trimming were resolved.
 
-**01/20/17 UPDATE**: Initial post digitization functions have been included via a basic GUI.  These include ability to preview file with and without silence trimming, and an option to create a silence trimmed version of file. The spectrograph has also been changed to scroll for easier viewability. Further testing has not detected any dropped samples either audibly or via Wavelab global analysis. 
+**2017-01-20 UPDATE**: Initial post digitization functions have been included via a basic GUI.  These include ability to preview file with and without silence trimming, and an option to create a silence trimmed version of file. The spectrograph has also been changed to scroll for easier viewability. Further testing has not detected any dropped samples either audibly or via Wavelab global analysis. 
 
-**12/22/16 UPDATE**: Current build was tested with a 40 minute transfer on the 2013 Macbook Air with no dropped samples detected either audibly or via Wavelab's global analysis tool.  Testing continues...
+**2016-12-22 UPDATE**: Current build was tested with a 40 minute transfer on the 2013 Macbook Air with no dropped samples detected either audibly or via Wavelab's global analysis tool.  Testing continues...
 
 # Huge thanks to all contributors!
 ## Contributors to date:
