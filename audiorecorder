@@ -315,7 +315,7 @@ fi
 
 # Passthrough mode
 if [ "${runtype}" = "passthrough" ] ; then
-    rec -c 2 -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 500000 -p | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
+    rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 500000 -p remix 1 2 | ffmpeg -i - -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
     ffplay -window_title "Current Settings Will Record Channel(s): ${channel_layout}" -f lavfi \
     "amovie='pipe\:0',${FILTER_CHAIN}" 2> /dev/null
     stty sane
@@ -331,7 +331,7 @@ fi
 
 mkfifo PIPE2REC
 #ASTATS_OUT=$(mktemp /tmp/temp.XXXX)
-rec -c 2 -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 2000000 -p | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -filter_complex "${CHANNELS}" -map "${LAYOUT}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
+rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 2000000 -p remix 1 2 | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -filter_complex "${CHANNELS}" -map "${LAYOUT}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
 ffplay -window_title "Currently Recording Channel(s): ${channel_layout}" -f lavfi \
 "amovie='pipe\:0',${FILTER_CHAIN}" 2> /dev/null | ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto -af afifo "${output}"/"${ITEM_ID}".wav
 
