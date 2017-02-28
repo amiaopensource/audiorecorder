@@ -325,19 +325,16 @@ fi
 # Record Mode
 _get_ITEM_ID
 
-if [ -e PIPE2REC ] ; then
-    rm -r PIPE2REC
+if [ -e AUDIORECORDERTEMP.wav ] ; then
+    rm -r AUDIORECORDERTEMP.wav
 fi
 
-mkfifo PIPE2REC
 #ASTATS_OUT=$(mktemp /tmp/temp.XXXX)
-rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 2000000 -p remix 1 2 | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -filter_complex "${CHANNELS}" -map "${LAYOUT}" -y PIPE2REC -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
+rec -r "${SAMPLE_RATE_NUMERIC}" -b 32 -L -e signed-integer --buffer 2000000 -p remix 1 2 | ffmpeg -i - -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -metadata comment="" -filter_complex "${CHANNELS}" -map "${LAYOUT}" -y -rf64 auto AUDIORECORDERTEMP.wav -f wav -c:a pcm_s16le -ar 44100 -filter_complex "${CHANNELS}" -map "${LAYOUT}" - |\
 ffplay -window_title "Currently Recording Channel(s): ${channel_layout}" -f lavfi \
-"amovie='pipe\:0',${FILTER_CHAIN}" 2> /dev/null | ffmpeg -i PIPE2REC -c:a "${CODEC}" -sample_rate "${SAMPLE_RATE_NUMERIC}" -rf64 auto -af afifo "${output}"/"${ITEM_ID}".wav
-
+"amovie='pipe\:0',${FILTER_CHAIN}" 2> /dev/null
 # Cleanup
 stty sane
-rm -r PIPE2REC
 
 ##COMMENTING OUT FOR NOW DUE TO LACK OF ACCURACY###
 # Post Recording Stats
@@ -383,8 +380,9 @@ _trim_file(){
     fi      
 }
 
-# Loads post digitization option GUI
-_post_digitization_gui
+# Cleans up and loads post digitization option GUI
+ffmpeg -i AUDIORECORDERTEMP.wav "${output}"/"${ITEM_ID}".wav
+rm -r AUDIORECORDERTEMP.wav && _post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
