@@ -6,6 +6,8 @@ Can be installed via homebrew. `brew tap amiaopensource/amiaos` and `brew instal
 
 Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
 
+**2017-03-04 UPDATE**: For the new release changes have been made to streamline the way audiorecorder handles input channels.  This will prevent it from being overwhelmed by A/D converters that output many empty tracks along with the desired tracks (such as the Apogee Symphony).  In two 55 minute tests and one 30 minute no drops or problems were detected via Wavelab analysis. Due to more efficient management of data the current buffering now has increased the latency for mono captures. A next step will be to see how much buffering can be safely lowered.
+
 **2017-02-24 UPDATE**: Changes appear to have been successful for adapting audiorecorder to macOS 10.12.03.  In testing it was discovered that audiorecorder has issues with A/D converters that have a large number of output tracks (such as sixteen as opposed to two).  Current audiorecorder head appears to be stable for two track A/D converters and testing is underway to expand its ability to deal with larger multi-track converters.
 
 **2017-02-23 UPDATE**: Due to some issues that were reported with macOS 10.12.03, some changes to buffering have been made and are currently being tested.
