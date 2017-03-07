@@ -373,7 +373,11 @@ _preview_trim(){
      if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
          mpv --force-window  --keep-open=yes --title="Preview Auto Trim" --geometry=600x400 "${FINALOUTPUT}" '--af=lavfi=graph="silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1"'
      else
-         mpv --force-window  --keep-open=yes --title="Preview Manual Trim" --start=+"${StartTrimLength}" --geometry=600x400 "${FINALOUTPUT}"
+         if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
+             mpv --force-window  --keep-open=yes --title="Preview Manual Trim" --start=+"${StartTrimLength}" --geometry=600x400 "${FINALOUTPUT}"
+         else
+             echo "Please use integers only for trim length"
+         fi
     fi
 }
 
@@ -383,8 +387,12 @@ _trim_file(){
     if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
         ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1:stop_periods=1:stop_duration=2:stop_threshold=-57dB -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y "${FINALOUTPUT}"
     else
-        TRIMAMOUNT=$(date -j -v0H -f %s "${StartTrimLength}"  "+%H:%M:%S" 2> /dev/null)
-        ffmpeg -ss "${TRIMAMOUNT}" -i "${PRETRIM}" -c copy -rf64 auto -y "${FINALOUTPUT}"
+        if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
+            TRIMAMOUNT=$(date -j -v0H -f %s "${StartTrimLength}"  "+%H:%M:%S" 2> /dev/null)
+            ffmpeg -ss "${TRIMAMOUNT}" -i "${PRETRIM}" -c copy -rf64 auto -y "${FINALOUTPUT}"
+        else
+            echo "Please use integers only for trim length"
+        fi  
     fi
 }
 
