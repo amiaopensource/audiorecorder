@@ -172,21 +172,31 @@ _post_digitization_gui(){
     # intro text
     intro.width = 300
     intro.type = text
-    intro.text = Select Post-digitization options
+    intro.text = Please Select Post-digitization Options
+    intro.x = 160
+    intro.y = 120
     #Preview
     preview.type = button
     preview.label = Preview
+    preview.x = 10
+    preview.y = 70
     #Trim Preview
     trim_preview.type = button
     trim_preview.label = Preview Trim
+    trim_preview.x = 110
+    trim_preview.y = 70
     #Trim
     trim.type = button
     trim.label = Trim 
+    trim.x = 235
+    trim.y = 70
     #Start Trim Length
     StartTrimLength.type = textfield
-    StartTrimLength.label = Enter seconds to trim from start of file.  Leave blank or as 'auto' to auto trim.
+    StartTrimLength.label = Enter amount to trim (in whole seconds) from start of file.  Leave blank or as 'auto' to auto trim.
     StartTrimLength.width = 100
     StartTrimLength.default = auto
+    StartTrimLength.x = 10
+    StartTrimLength.y = 10
     "
 
     pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
@@ -386,10 +396,6 @@ rm -r AUDIORECORDERTEMP.wav && _post_digitization_gui
 if [ "${bwf}" = "1" ] ; then
     BEXT_TARGET="${FINALOUTPUT}"
     _embed_bext
-    if [ -e "${PRETRIM}" ] ; then
-        BEXT_TARGET="${PRETRIM}"
-        _embed_bext
-    fi
 fi
 
 #Cascadia Now!
