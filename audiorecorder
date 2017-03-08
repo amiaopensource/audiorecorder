@@ -172,16 +172,31 @@ _post_digitization_gui(){
     # intro text
     intro.width = 300
     intro.type = text
-    intro.text = Select Post-digitization options
+    intro.text = Please Select Post-digitization Options
+    intro.x = 160
+    intro.y = 120
     #Preview
     preview.type = button
     preview.label = Preview
+    preview.x = 10
+    preview.y = 70
     #Trim Preview
     trim_preview.type = button
     trim_preview.label = Preview Trim
+    trim_preview.x = 110
+    trim_preview.y = 70
     #Trim
     trim.type = button
     trim.label = Trim 
+    trim.x = 235
+    trim.y = 70
+    #Start Trim Length
+    StartTrimLength.type = textfield
+    StartTrimLength.label = Enter amount to trim (in whole seconds) from start of file.  Leave blank or as 'auto' to auto trim.
+    StartTrimLength.width = 100
+    StartTrimLength.default = auto
+    StartTrimLength.x = 10
+    StartTrimLength.y = 10
     "
 
     pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
@@ -347,49 +362,48 @@ stty sane
 #echo -e "\033[1;32m${ASTATS}\033[0m"
 
 #Post Record Functions
+PRETRIM="${output}"/"${ITEM_ID}"_untrimmed.wav
+FINALOUTPUT="${output}"/"${ITEM_ID}".wav
 _preview_file(){
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${output}"/"${ITEM_ID}".wav
-}
-
-_silence_detect(){
-    SILENCE=$(ffprobe -v 0 -f lavfi amovie="${output}"/"${ITEM_ID}".wav,silencedetect=noise=-57dB:d=3 -show_entries frame_tags=lavfi.silence_start,lavfi.silence_end -of default=nk=0:nw=1)
-    AUDIO_START=$(echo "${SILENCE}" | grep "silence_end" | head -n1 | cut -d'=' -f2)
-    AUDIO_END=$(echo "${SILENCE}" | grep "silence_start" | tail -n1 | cut -d'=' -f2)
+    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
 }
 
 _preview_trim(){
-    _silence_detect
-    if [ -z "${SILENCE}" ] ; then
-        echo "No Silence Detected"
-    else
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 --start=+"${AUDIO_START}" --length=$(echo ${AUDIO_END} - ${AUDIO_START} | bc) "${output}"/"${ITEM_ID}".wav
+    StartTrimLength=$(echo "${StartTrimLength}" | tr '[:lower:]' '[:upper:]')
+     if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
+         mpv --force-window  --keep-open=yes --title="Preview Auto Trim" --geometry=600x400 "${FINALOUTPUT}" '--af=lavfi=graph="silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1"'
+     else
+         if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
+             mpv --force-window  --keep-open=yes --title="Preview Manual Trim" --start=+"${StartTrimLength}" --geometry=600x400 "${FINALOUTPUT}"
+         else
+             echo "Please use integers only for trim length"
+         fi
     fi
 }
 
 _trim_file(){
-    if [ -z "${SILENCE}" ] ; then
-       _silence_detect
-    fi
-    if [ -z "${SILENCE}" ] ; then
-        echo "No Silence Detected"
+    StartTrimLength=$(echo "${StartTrimLength}" | tr '[:lower:]' '[:upper:]')
+    mv "${FINALOUTPUT}" "${PRETRIM}"
+    if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
+        ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1:stop_periods=1:stop_duration=2:stop_threshold=-57dB -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y "${FINALOUTPUT}"
     else
-    TRIM_START=$(date -j -v0H -f %s "${AUDIO_START}"  "+%H:%M:%S" 2> /dev/null)
-    ffmpeg -ss "${TRIM_START}" -i "${output}"/"${ITEM_ID}".wav -t $(echo ${AUDIO_END} - ${AUDIO_START} +1 | bc) -c copy -y "${output}"/"${ITEM_ID}"_trim.wav
-    fi      
+        if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
+            TRIMAMOUNT=$(date -j -v0H -f %s "${StartTrimLength}"  "+%H:%M:%S" 2> /dev/null)
+            ffmpeg -ss "${TRIMAMOUNT}" -i "${PRETRIM}" -c copy -rf64 auto -y "${FINALOUTPUT}"
+        else
+            echo "Please use integers only for trim length"
+        fi  
+    fi
 }
 
 # Cleans up and loads post digitization option GUI
-ffmpeg -i AUDIORECORDERTEMP.wav "${output}"/"${ITEM_ID}".wav
+ffmpeg -i AUDIORECORDERTEMP.wav "${FINALOUTPUT}"
 rm -r AUDIORECORDERTEMP.wav && _post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
-    BEXT_TARGET="${output}"/"${ITEM_ID}.wav"
+    BEXT_TARGET="${FINALOUTPUT}"
     _embed_bext
-    if [ -e "${output}"/"${ITEM_ID}_trim.wav" ] ; then
-        BEXT_TARGET="${output}"/"${ITEM_ID}_trim.wav"
-        _embed_bext
-    fi
 fi
 
 #Cascadia Now!
