@@ -174,34 +174,40 @@ _post_digitization_gui(){
     intro.type = text
     intro.text = Please Select Post-digitization Options
     intro.x = 160
-    intro.y = 120
+    intro.y = 370
     #Preview
     preview.type = button
     preview.label = Preview
     preview.x = 10
-    preview.y = 70
+    preview.y = 320
     #Trim Preview
     trim_preview.type = button
     trim_preview.label = Preview Trim
     trim_preview.x = 110
-    trim_preview.y = 70
+    trim_preview.y = 320
     #Trim
     trim.type = button
     trim.label = Trim 
     trim.x = 235
-    trim.y = 70
+    trim.y = 320
+    #Instructions
+    instructions.type = text
+    instructions.width = 500
+    instructions.default = To trim file, enter the amount (in seconds) to trim from the start and end of the file. [return][return]If 'Start Trim' is left blank, autotrim will be applied to start of file.  If no trim for 'Head' is desired enter '0'.
+    instructions.x = 10
+    instructions.y = 150
     #Start Trim Length
     StartTrimLength.type = textfield
-    StartTrimLength.label = Enter amount to trim (in whole seconds) from start of file.  Leave blank or as 'auto' to auto trim.
+    StartTrimLength.label = Start Trim
     StartTrimLength.width = 100
     StartTrimLength.x = 10
-    StartTrimLength.y = 10
+    StartTrimLength.y = 60
     #End Trim Length
     EndTrimLength.type = textfield
     EndTrimLength.label = End Trim
     EndTrimLength.width = 100
-    EndTrimLength.x = 350
-    EndTrimLength.y = 10
+    EndTrimLength.x = 10
+    EndTrimLength.y = 5
     "
 
     pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
@@ -408,8 +414,12 @@ _preview_trim(){
 }
 
 _trim_file(){
-    _set_up_trim "${FINALOUTPUT}"
-    mv "${FINALOUTPUT}" "${PRETRIM}"
+    if [ -z "${TRIMCHECK}" ] ; then
+        _set_up_trim "${FINALOUTPUT}"
+         mv "${FINALOUTPUT}" "${PRETRIM}"
+     else
+         _set_up_trim "${PRETRIM}"
+    fi
     if [ "${StartTrimLength}" = "" ] ; then
         if [ -n "${EndTrimLength}" ] ; then
             ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y INTERMEDIATE.wav
@@ -420,8 +430,9 @@ _trim_file(){
             ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y "${FINALOUTPUT}"
         fi      
     else
-        ffmpeg ${STARTTRIMOPT} -i "${PRETRIM}" -c copy -rf64 auto ${ENDTRIMOPT} -y "${FINALOUTPUT}" 
+        ffmpeg ${STARTTRIMOPT} -i "${PRETRIM}" -c copy -rf64 auto ${ENDTRIMOPT} -y "${FINALOUTPUT}"
     fi
+    TRIMCHECK='1'
 }
 
 # Cleans up and loads post digitization option GUI
