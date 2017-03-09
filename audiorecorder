@@ -173,7 +173,7 @@ _post_digitization_gui(){
     intro.width = 300
     intro.type = text
     intro.text = Please Select Post-digitization Options
-    intro.x = 160
+    intro.x = 150
     intro.y = 370
     #Preview
     preview.type = button
@@ -183,12 +183,12 @@ _post_digitization_gui(){
     #Trim
     trim.type = button
     trim.label = Trim 
-    trim.x = 235
+    trim.x = 150
     trim.y = 320
     #Instructions
     instructions.type = text
     instructions.width = 500
-    instructions.default = Press 'Preview' to hear the file you recorded.[return][return]To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.[return][return]If 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim for at start is desired enter '0'. After trimming, a preview window will open for your new file.[return][return]Press 'OK' to quit.
+    instructions.default = Press 'Preview' to hear the file you recorded.[return][return]To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.[return][return]If 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.[return][return]Press 'OK' to quit.
     instructions.x = 10
     instructions.y = 150
     #Start Trim Length
@@ -371,7 +371,11 @@ stty sane
 PRETRIM="${output}"/"${ITEM_ID}"_untrimmed.wav
 FINALOUTPUT="${output}"/"${ITEM_ID}".wav
 _preview_file(){
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
+    if [ -z "${TRIMCHECK}" ] ; then
+        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
+    else
+        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${PRETRIM}"
+    fi
 }
 
 _set_up_trim(){
@@ -414,7 +418,7 @@ _trim_file(){
         ffmpeg ${STARTTRIMOPT} -i "${PRETRIM}" -c copy -rf64 auto ${ENDTRIMOPT} -y "${FINALOUTPUT}"
     fi
     TRIMCHECK='1'
-        _preview_file
+        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
     fi
 }
 
