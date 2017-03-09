@@ -193,7 +193,7 @@ _post_digitization_gui(){
     #Instructions
     instructions.type = text
     instructions.width = 500
-    instructions.default = Press 'Preview' to hear the file you recorded.[return][return]To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.[return][return]If 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.[return][return]Press 'OK' to quit.
+    instructions.default = Press 'Preview' to hear the file you recorded.[return][return]To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.[return][return]If 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.[return][return]Press 'Finish' to quit.
     instructions.x = 10
     instructions.y = 150
     #Start Trim Length
@@ -208,6 +208,8 @@ _post_digitization_gui(){
     EndTrimLength.width = 100
     EndTrimLength.x = 10
     EndTrimLength.y = 5
+    exit.type = defaultbutton
+    exit.label = Finish
     "
 
     pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
@@ -333,7 +335,7 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 
 # BEXT mode
 if [ "${runtype}" = "bext" ] ; then
-    ITEM_ID=$(echo $(basename "${2}") | cut -d'.' -f1)
+    ITEM_ID=$(basename "${2}" | cut -d'.' -f1)
     BEXT_TARGET="${2}"
     _embed_bext
     exit 0
@@ -386,10 +388,10 @@ _preview_file(){
 _set_up_trim(){
     if [ -n "${EndTrimLength}" ] ; then
         FILELENGTH=$(ffprobe "${1}" 2>&1 | grep Duration | tr -d ' ' | cut -d',' -f1 | cut -d':' -f2-)
-        FILELENGTH_NORMALIZED=$(echo ${FILELENGTH} | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
-        ENDTRIM=$(echo ${FILELENGTH_NORMALIZED} - ${EndTrimLength} | bc)
+        FILELENGTH_NORMALIZED=$(echo "${FILELENGTH}" | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
+        ENDTRIM=$(echo "${FILELENGTH_NORMALIZED}" - "${EndTrimLength}" | bc)
         if [ -n "${StartTrimLength}" ] && [ -n "${EndTrimLength}" ] ; then
-            ENDTRIM=$(echo ${FILELENGTH_NORMALIZED} - ${EndTrimLength} -  "${StartTrimLength}" | bc)
+            ENDTRIM=$(echo "${FILELENGTH_NORMALIZED}" - "${EndTrimLength}" -  "${StartTrimLength}" | bc)
         fi
         ENDTRIMOPT="-t ${ENDTRIM}"
     fi
@@ -428,7 +430,7 @@ _trim_file(){
 }
 
 # Cleans up and loads post digitization option GUI
-ffmpeg -i AUDIORECORDERTEMP.wav -lavfi showwavespic=split_channels=1:s=400x150 -y AUDIORECORDERTEMP.png -c copy "${FINALOUTPUT}"
+ffmpeg -i AUDIORECORDERTEMP.wav -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy "${FINALOUTPUT}"
 rm AUDIORECORDERTEMP.wav && _post_digitization_gui
 
 # Embed metadata in BEXT
