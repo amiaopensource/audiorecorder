@@ -174,7 +174,12 @@ _post_digitization_gui(){
     intro.type = text
     intro.text = Please Select Post-digitization Options
     intro.x = 150
-    intro.y = 370
+    intro.y = 500
+    #Waveform
+    waveform.type = image
+    waveform.path = AUDIORECORDERTEMP.png
+    waveform.x = 5
+    waveform.y = 350
     #Preview
     preview.type = button
     preview.label = Preview
@@ -423,13 +428,14 @@ _trim_file(){
 }
 
 # Cleans up and loads post digitization option GUI
-ffmpeg -i AUDIORECORDERTEMP.wav "${FINALOUTPUT}"
-rm -r AUDIORECORDERTEMP.wav && _post_digitization_gui
+ffmpeg -i AUDIORECORDERTEMP.wav -lavfi showwavespic=split_channels=1:s=400x150 -y AUDIORECORDERTEMP.png -c copy "${FINALOUTPUT}"
+rm AUDIORECORDERTEMP.wav && _post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
     BEXT_TARGET="${FINALOUTPUT}"
     _embed_bext
 fi
+rm AUDIORECORDERTEMP.png
 
 #Cascadia Now!
