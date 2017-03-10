@@ -5,6 +5,8 @@ touch "${config}"
 touch "${bwf_config}"
 . "$config"
 . "${bwf_config}"
+#Set mpv to quit with same key as ffplay
+echo "ESC quit" > ~/.config/mpv/input.conf
 
 _usage(){
     echo "Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]"
