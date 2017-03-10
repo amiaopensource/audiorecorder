@@ -381,9 +381,9 @@ PRETRIM="${output}"/"${ITEM_ID}"_untrimmed.wav
 FINALOUTPUT="${output}"/"${ITEM_ID}".wav
 _preview_file(){
     if [ -z "${TRIMCHECK}" ] ; then
-        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${FINALOUTPUT}"
     else
-        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${PRETRIM}"
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${PRETRIM}"
     fi
 }
 
@@ -427,7 +427,7 @@ _trim_file(){
         ffmpeg ${STARTTRIMOPT} -i "${PRETRIM}" -c copy -rf64 auto ${ENDTRIMOPT} -y "${FINALOUTPUT}"
     fi
     TRIMCHECK='1'
-        mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview Trim" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${FINALOUTPUT}"
     fi
 }
 
