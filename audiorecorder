@@ -213,19 +213,32 @@ _post_digitization_gui(){
     exit.type = defaultbutton
     exit.label = Finish
     "
-
-    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
-    echo "${post_gui_conf}" > "${pashua_configfile}"
-    pashua_run
-    rm "${pashua_configfile}"
+    if  [[ $OSTYPE = darwin* ]] ; then
+        pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
+        echo "${post_gui_conf}" > "${pashua_configfile}"
+        pashua_run
+        rm "${pashua_configfile}"
+    else
+        post_dig_opt=(preview trim exit)
+        post_dig=$(dialog --title "Select Action"  --radiolist "What now?" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
+        case "${post_dig}" in
+            "preview")
+                preview="1"
+                ;;
+            "trim")
+                trim="1"
+                ;;
+            "exit")
+                clear && exit 0
+                ;;
+        esac
+    fi
+        
     
     if [ "${preview}" = "1" ] ; then
         _preview_file && _post_digitization_gui
     fi
     
-    if [ "${trim_preview}" = "1" ] ; then
-        _preview_trim && _post_digitization_gui
-    fi
     if [ "${trim}" = "1" ] ; then
         _trim_file && _post_digitization_gui
     fi
