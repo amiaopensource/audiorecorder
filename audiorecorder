@@ -5,6 +5,8 @@ touch "${config}"
 touch "${bwf_config}"
 . "$config"
 . "${bwf_config}"
+#Set mpv to quit with same key as ffplay
+echo "ESC quit" > ~/.config/mpv/input.conf
 
 _usage(){
     echo "Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]"
@@ -173,30 +175,43 @@ _post_digitization_gui(){
     intro.width = 300
     intro.type = text
     intro.text = Please Select Post-digitization Options
-    intro.x = 160
-    intro.y = 120
+    intro.x = 150
+    intro.y = 500
+    #Waveform
+    waveform.type = image
+    waveform.path = AUDIORECORDERTEMP.tiff
+    waveform.x = 5
+    waveform.y = 350
     #Preview
     preview.type = button
     preview.label = Preview
     preview.x = 10
-    preview.y = 70
-    #Trim Preview
-    trim_preview.type = button
-    trim_preview.label = Preview Trim
-    trim_preview.x = 110
-    trim_preview.y = 70
+    preview.y = 320
     #Trim
     trim.type = button
     trim.label = Trim 
-    trim.x = 235
-    trim.y = 70
+    trim.x = 150
+    trim.y = 320
+    #Instructions
+    instructions.type = text
+    instructions.width = 500
+    instructions.default = Press 'Preview' to hear the file you recorded.[return][return]To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.[return][return]If 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.[return][return]Press 'Finish' to quit.
+    instructions.x = 10
+    instructions.y = 150
     #Start Trim Length
     StartTrimLength.type = textfield
-    StartTrimLength.label = Enter amount to trim (in whole seconds) from start of file.  Leave blank or as 'auto' to auto trim.
+    StartTrimLength.label = Start Trim
     StartTrimLength.width = 100
-    StartTrimLength.default = auto
     StartTrimLength.x = 10
-    StartTrimLength.y = 10
+    StartTrimLength.y = 60
+    #End Trim Length
+    EndTrimLength.type = textfield
+    EndTrimLength.label = End Trim
+    EndTrimLength.width = 100
+    EndTrimLength.x = 10
+    EndTrimLength.y = 5
+    exit.type = defaultbutton
+    exit.label = Finish
     "
 
     pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
@@ -322,7 +337,7 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 
 # BEXT mode
 if [ "${runtype}" = "bext" ] ; then
-    ITEM_ID=$(echo $(basename "${2}") | cut -d'.' -f1)
+    ITEM_ID=$(basename "${2}" | cut -d'.' -f1)
     BEXT_TARGET="${2}"
     _embed_bext
     exit 0
@@ -365,45 +380,68 @@ stty sane
 PRETRIM="${output}"/"${ITEM_ID}"_untrimmed.wav
 FINALOUTPUT="${output}"/"${ITEM_ID}".wav
 _preview_file(){
-    mpv --force-window  --keep-open=yes --title=Preview --geometry=600x400 "${FINALOUTPUT}"
+    if [ -z "${TRIMCHECK}" ] ; then
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${FINALOUTPUT}"
+    else
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${PRETRIM}"
+    fi
 }
 
-_preview_trim(){
-    StartTrimLength=$(echo "${StartTrimLength}" | tr '[:lower:]' '[:upper:]')
-     if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
-         mpv --force-window  --keep-open=yes --title="Preview Auto Trim" --geometry=600x400 "${FINALOUTPUT}" '--af=lavfi=graph="silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1"'
-     else
-         if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
-             mpv --force-window  --keep-open=yes --title="Preview Manual Trim" --start=+"${StartTrimLength}" --geometry=600x400 "${FINALOUTPUT}"
-         else
-             echo "Please use integers only for trim length"
-         fi
+_set_up_trim(){
+    if [ -n "${EndTrimLength}" ] ; then
+        FILELENGTH=$(ffprobe "${1}" 2>&1 | grep Duration | tr -d ' ' | cut -d',' -f1 | cut -d':' -f2-)
+        FILELENGTH_NORMALIZED=$(echo "${FILELENGTH}" | awk -F: '{ print ($1 * 3600) + ($2 * 60) + $3 }')
+        ENDTRIM=$(echo "${FILELENGTH_NORMALIZED}" - "${EndTrimLength}" | bc)
+        if [ -n "${StartTrimLength}" ] && [ -n "${EndTrimLength}" ] ; then
+            ENDTRIM=$(echo "${FILELENGTH_NORMALIZED}" - "${EndTrimLength}" -  "${StartTrimLength}" | bc)
+        fi
+        ENDTRIMOPT="-t ${ENDTRIM}"
+    fi
+    if [ -n "${StartTrimLength}" ] ; then
+        STARTTRIMOPT="-ss ${StartTrimLength}"
     fi
 }
 
 _trim_file(){
-    StartTrimLength=$(echo "${StartTrimLength}" | tr '[:lower:]' '[:upper:]')
-    mv "${FINALOUTPUT}" "${PRETRIM}"
-    if [ "${StartTrimLength}" = "AUTO" ] || [ "${StartTrimLength}" = "" ] ; then
-        ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1:stop_periods=1:stop_duration=2:stop_threshold=-57dB -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y "${FINALOUTPUT}"
+    if [ -n "${StartTrimLength}" ] && ! [[ "${StartTrimLength}" =~ ^[+]?[0-9]+\.?[0-9]*$ ]] ; then
+        echo "Please use only (positive) numbers for the trim length"
+    elif [ -n "${EndTrimLength}" ] && ! [[ "${EndTrimLength}" =~ ^[+]?[0-9]+\.?[0-9]*$ ]] ; then 
+        echo "Please use only (positive) numbers for the trim length"
     else
-        if [[ "${StartTrimLength}" =~ ^-?[0-9]+$ ]] ; then
-            TRIMAMOUNT=$(date -j -v0H -f %s "${StartTrimLength}"  "+%H:%M:%S" 2> /dev/null)
-            ffmpeg -ss "${TRIMAMOUNT}" -i "${PRETRIM}" -c copy -rf64 auto -y "${FINALOUTPUT}"
-        else
-            echo "Please use integers only for trim length"
-        fi  
+    if [ -z "${TRIMCHECK}" ] ; then
+        _set_up_trim "${FINALOUTPUT}"
+         mv "${FINALOUTPUT}" "${PRETRIM}"
+     else
+         _set_up_trim "${PRETRIM}"
     fi
+    if [ "${StartTrimLength}" = "" ] ; then
+        if [ -n "${EndTrimLength}" ] ; then
+            ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y INTERMEDIATE.wav
+            _set_up_trim INTERMEDIATE.wav
+            ffmpeg -i INTERMEDIATE.wav -c copy -t "${ENDTRIM}" -rf64 auto -y "${FINALOUTPUT}"
+            rm INTERMEDIATE.wav
+        else
+            ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y "${FINALOUTPUT}"
+        fi      
+    else
+        ffmpeg ${STARTTRIMOPT} -i "${PRETRIM}" -c copy -rf64 auto ${ENDTRIMOPT} -y "${FINALOUTPUT}"
+    fi
+    TRIMCHECK='1'
+        mpv --force-window --no-terminal --keep-open=yes --title="Preview Trim" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${FINALOUTPUT}"
+    fi
+    STARTTRIMOPT=""
+    ENDTRIMOPT=""
 }
 
 # Cleans up and loads post digitization option GUI
-ffmpeg -i AUDIORECORDERTEMP.wav "${FINALOUTPUT}"
-rm -r AUDIORECORDERTEMP.wav && _post_digitization_gui
+ffmpeg -i AUDIORECORDERTEMP.wav -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.tiff -c copy "${FINALOUTPUT}"
+rm AUDIORECORDERTEMP.wav && _post_digitization_gui
 
 # Embed metadata in BEXT
 if [ "${bwf}" = "1" ] ; then
     BEXT_TARGET="${FINALOUTPUT}"
     _embed_bext
 fi
+rm AUDIORECORDERTEMP.tiff
 
 #Cascadia Now!
