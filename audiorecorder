@@ -219,8 +219,14 @@ _post_digitization_gui(){
         pashua_run
         rm "${pashua_configfile}"
     else
+        preview=""
+        trim=""
         post_dig_opt=(preview trim exit)
         post_dig=$(dialog --title "Select Action"  --radiolist "What now?" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
+        if [ "${post_dig}" = "trim" ] ; then
+            StartTrimLength=$(dialog --title "Start Trim Length" --inputbox "Enter seconds to trim from start of file. Leave blank for auto. Enter 0 if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
+            EndTrimLength=$(dialog --title "End Trim Length" --inputbox "Enter seconds to trim from end of file. Leave blank if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
+        fi  
         case "${post_dig}" in
             "preview")
                 preview="1"
