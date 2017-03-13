@@ -29,6 +29,29 @@ while getopts ":hepmb" opt ; do
     esac
 done
 
+# Check for System and Pashua
+# Pashua search is excerpt from Wrapper function for interfacing to Pashua. Written by Carsten
+# Bluem <carsten@bluem.net> in 10/2003, modified in 12/2003 (including
+# a code snippet contributed by Tor Sigurdsson), 08/2004 and 12/2004.
+bundlepath="Pashua.app/Contents/MacOS/Pashua"
+mypath=$(dirname "${0}")
+for searchpath in "$mypath/Pashua" "$mypath/$bundlepath" "./$bundlepath" \
+                  "/Applications/$bundlepath" "$HOME/Applications/$bundlepath"
+do
+    if [ -f "$searchpath" -a -x "$searchpath" ] ; then
+        pashuapath=$searchpath
+        break
+    fi
+done
+if [ ! "$pashuapath" ] && [[ $OSTYPE = darwin* ]]; then
+    echo "Error: Pashua was not found. Proceeding with Nano. Please install Pashua a more functional interface."
+    GUI_TEST=1
+fi
+if  ! [[ $OSTYPE = darwin* ]] ; then
+    GUI_TEST=1
+fi
+
+
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
@@ -110,7 +133,7 @@ _metadata_gui(){
     cb.label = Cancel
     "
 
-    if  [[ $OSTYPE = darwin* ]] ; then
+    if  ! [ "${GUI_TEST}" = 1 ] ; then
         pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
         echo "${gui_conf}" > "${pashua_configfile}"
         pashua_run
@@ -163,7 +186,7 @@ _master_gui(){
     cb.type = cancelbutton
     cb.label = Cancel
     "
-    if  [[ $OSTYPE = darwin* ]] ; then
+    if  ! [ "${GUI_TEST}" = 1 ] ; then
         pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
         echo "${gui_conf}" > "${pashua_configfile}"
         pashua_run
@@ -222,7 +245,7 @@ _post_digitization_gui(){
     exit.type = defaultbutton
     exit.label = Finish
     "
-    if  [[ $OSTYPE = darwin* ]] ; then
+    if  ! [ "${GUI_TEST}" = 1 ] ; then
         pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
         echo "${post_gui_conf}" > "${pashua_configfile}"
         pashua_run
@@ -282,20 +305,6 @@ pashua_run() {
     # , as in a doubleclickable application, cwd is /
     # BTW, all these quotes below are necessary to handle paths
     # containing spaces.
-    bundlepath="Pashua.app/Contents/MacOS/Pashua"
-    mypath=$(dirname "${0}")
-    for searchpath in "$mypath/Pashua" "$mypath/$bundlepath" "./$bundlepath" \
-                      "/Applications/$bundlepath" "$HOME/Applications/$bundlepath"
-    do
-        if [ -f "$searchpath" -a -x "$searchpath" ] ; then
-            pashuapath=$searchpath
-            break
-        fi
-    done
-    if [ ! "$pashuapath" ] ; then
-        echo "Error: Pashua is not found."
-        break 2
-    fi
     encoding=""
     # Get result
     result=$("$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g')
