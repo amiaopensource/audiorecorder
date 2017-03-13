@@ -3,6 +3,7 @@ config="$HOME/.$(basename "${0}").conf"
 bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
 touch "${config}"
 touch "${bwf_config}"
+touch ~/.config/mpv/input.conf
 . "$config"
 . "${bwf_config}"
 #Set mpv to quit with same key as ffplay
