@@ -110,10 +110,15 @@ _metadata_gui(){
     cb.label = Cancel
     "
 
-    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
-    echo "${gui_conf}" > "${pashua_configfile}"
-    pashua_run
-    rm "${pashua_configfile}"
+    if  [[ $OSTYPE = darwin* ]] ; then
+        pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
+        echo "${gui_conf}" > "${pashua_configfile}"
+        pashua_run
+        rm "${pashua_configfile}"
+    else
+        nano "${bwf_config}"
+        . "${bwf_config}"
+    fi
 }
 
 _master_gui(){
@@ -158,11 +163,15 @@ _master_gui(){
     cb.type = cancelbutton
     cb.label = Cancel
     "
-
-    pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
-    echo "${gui_conf}" > "${pashua_configfile}"
-    pashua_run
-    rm "${pashua_configfile}"
+    if  [[ $OSTYPE = darwin* ]] ; then
+        pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
+        echo "${gui_conf}" > "${pashua_configfile}"
+        pashua_run
+        rm "${pashua_configfile}"
+    else
+        nano "${config}"
+        . "$config"   
+    fi
 }
 
 _post_digitization_gui(){
@@ -222,7 +231,7 @@ _post_digitization_gui(){
         preview=""
         trim=""
         post_dig_opt=(preview trim exit)
-        post_dig=$(dialog --title "Select Action"  --radiolist "What now?" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
+        post_dig=$(dialog --title "Select Action"  --radiolist "Click or use arrow keys and space bar to select" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
         if [ "${post_dig}" = "trim" ] ; then
             StartTrimLength=$(dialog --title "Start Trim Length" --inputbox "Enter seconds to trim from start of file. Leave blank for auto. Enter 0 if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
             EndTrimLength=$(dialog --title "End Trim Length" --inputbox "Enter seconds to trim from end of file. Leave blank if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
@@ -235,7 +244,7 @@ _post_digitization_gui(){
                 trim="1"
                 ;;
             "exit")
-                clear && exit 0
+                clear
                 ;;
         esac
     fi
@@ -305,18 +314,28 @@ if [ "${runtype}" = "edit" ] ; then
     _master_gui
 
     {
+    echo "#Please input choices between the quotes from the options supplied"
+    echo ""
+    echo "#Enter output directory for digitized files"
     echo "output=\"${output}\""
+    echo ""
+    echo "#Sample Rate Choices: 44.1 kHz, 48 kHz, 96 kHz"
     echo "sample_rate=\"${sample_rate}\""
+    echo "#Bit Depth Choices: 16 bit, 24 bit"
     echo "bit_depth=\"${bit_depth}\""
+    echo "#Channel Layout Choices: 1, 2, 1 and 2"
     echo "channel_layout=\"${channel_layout}\""
+    echo "#BWF Choices 0, 1 (0 for off 1 for on)"
     echo "bwf=\"${bwf}\""
     } > "${config}"
 fi
 if [ "${runtype}" = "metadata" ] ; then
     _metadata_gui
-
     {
+    echo "#Enter originator information betwen the quotes"
     echo "originator=\"${originator}\""
+    echo ""
+    echo "#Enter Coding History information betwen the quotes"
     echo "coding_history=\"${coding_history}\""
     } > "${bwf_config}"
 fi
