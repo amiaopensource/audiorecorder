@@ -16,6 +16,7 @@ echo "ESC quit" > ~/.config/mpv/input.conf
 _usage(){
 cat <<EOF
 $(basename "${0}") $VERSION
+Tool for calibration and recording of analog audio sources.
 
 Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]
   -h  display this help menu
