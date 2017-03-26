@@ -21,7 +21,7 @@ Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]
   -h  display this help menu
   -e  edit
   -p  passthrough
-  -m  metadata"
+  -m  metadata
   -b  bext
 EOF
 }
