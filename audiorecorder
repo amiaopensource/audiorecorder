@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+
+# audiorecorder
+
+VERSION=$(TMP=$(brew info audiorecorder | grep -Eo "/audiorecorder/.* \(") ; echo ${TMP:15:(${#TMP}-17)})
 config="$HOME/.$(basename "${0}").conf"
 bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
 touch "${config}"
@@ -10,12 +14,17 @@ touch ~/.config/mpv/input.conf
 echo "ESC quit" > ~/.config/mpv/input.conf
 
 _usage(){
-    echo "Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]"
-    echo "  -h  display this help menu"
-    echo "  -e  edit"
-    echo "  -p  passthrough"
-    echo "  -m  metadata"
-    echo "  -b  bext"
+cat <<EOF
+$(basename "${0}") ${VERSION}
+Tool for calibration and recording of analog audio sources.
+
+Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]
+  -h  display this help menu
+  -e  edit
+  -p  passthrough
+  -m  metadata
+  -b  bext
+EOF
 }
 
 OPTIND=1
@@ -459,7 +468,7 @@ _trim_file(){
     if [ -z "${TRIMCHECK}" ] ; then
         _set_up_trim "${FINALOUTPUT}"
          mv "${FINALOUTPUT}" "${PRETRIM}"
-     else
+    else
          _set_up_trim "${PRETRIM}"
     fi
     if [ "${StartTrimLength}" = "" ] ; then
