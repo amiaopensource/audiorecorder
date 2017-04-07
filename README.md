@@ -16,7 +16,7 @@ Linuxbrew install testing is currently being conducted.
 Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
 
 #### Initial setup:
-To set up audiorecorder, first run the command `audiorecorder -e`. This will open an interface where settings such as recording bit depth and sample rate can be selected.  This is also where the option to embed BEXT metadata can be selected.
+To set up audiorecorder, first run the command `audiorecorder -e`. This will open an interface where settings such as recording bit depth and sample rate can be selected. This is also where the option to embed BEXT metadata can be selected.
 
 To set the metadata that will be embedded in the BEXT chunk (if activated in the coniguration menu) run the command `audiorecorder -m`. This will open an interface where the desired values can be entered.
 
@@ -25,25 +25,21 @@ To set the metadata that will be embedded in the BEXT chunk (if activated in the
 
 <img src="https://raw.githubusercontent.com/amiaopensource/audiorecorder/master/numbered_interface.png" alt="audiorecorder interface" height="350" width="350">
 
-### Preview:
+#### Preview:
+Running `audiorecorder -p` will open the preview window. This window can be closed with the escape key. This allows you to check your settings and playback machine calibration using the audiorecorder interface without creating a file. It is recommended to use this mode before every recording. Once you are satisfied that everything is calibrated appropriately, move on to record mode.
 
-## Huge thanks to all contributors!
+#### Record:
+Running the command `audiorecorder` will start record mode.  You will be promted for the name of the file created. __Wait until the audiorecorder interface opens__, and then press play on your playback machine. During recording do not resize the window, as this can cause problems with the audio buffer. To stop recording press the escape key.
+
+Once recording is complete, an interface will open showing the waveform of the recorded file, as well as giving options to 'preview' and 'trim' the file.
+
+Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is neccessary. Once you are done, press 'Finish' to quit.
+
+## Huge thanks to all contributors to audiorecorder!
 ### Contributors to date:
 privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice)
 
 Special thanks to Matt Boyd at the University of Washington for extensive testing assistance!
-
-## Current quirks:
-
-1. There is a small hiccup when the visualization window opens. This means you must wait until the window opens to press play on source material.
-2. Don't use your built in microphone as a device without using headphones or muting your speakers othewise you will start a feedback loop that sounds like you are bringing about armageddon.
-3. The signal information in the CLI by sox is for the stream that is being piped into ffplay, so things like peaked audio warnings and levels will be accurate, but the displayed sample rate and depth are not the ones being used in the recorded file.
-4. The audiostats that are provided post digitization appear to not reflect actual values sometimes (especially depending on device used to digitize). For the time being they should be taken with a grain of salt.
-
-## Current Window
-Includes peak meters, spectrum information (lines represent 1, 5, 10, 15, 20 kHz), audio phase, spectrogram and a graph representing peak levels (colored area represents -5 dB to 0 dB).
-
-![Window](https://github.com/amiaopensource/audiorecorder/blob/master/current_interface.gif)
 
 ## License
 <a rel="license" href="https://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br>The audiorecorder script and all associated documentation is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
