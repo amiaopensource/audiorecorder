@@ -3,6 +3,7 @@
 ####  A work in progress to create a free tool for the calibration and recording of analog audio signals
 
 ## Development information:
+For updates and history of development please see [this page](https://github.com/amiaopensource/audiorecorder/blob/master/history.md).
 
 ## Installation:
 Can be installed on macOS via Homebrew with the following command: 
@@ -31,12 +32,12 @@ Running `audiorecorder -p` will open the preview window. This window can be clos
 #### Record:
 Running the command `audiorecorder` will start record mode.  You will be promted for the name of the file created. __Wait until the audiorecorder interface opens__, and then press play on your playback machine. During recording do not resize the window, as this can cause problems with the audio buffer. To stop recording press the escape key.
 
-Once recording is complete, an interface will open showing the waveform of the recorded file, as well as giving options to 'preview' and 'trim' the file.
+Once recording is complete, audiorecorder will process the file, and then an interface will open showing the waveform of the recorded file, as well as giving options to 'preview' and 'trim' the file.
 
-Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is neccessary. Once you are done, press 'Finish' to quit.
+Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'. If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is neccessary. Once you are done, press 'Finish' to finalize and quit. It is at this point that BEXT metadata will be embedded if that option has been selected.
 
 ## Huge thanks to all contributors to audiorecorder!
-### Contributors to date:
+#### Contributors to date:
 privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice)
 
 Special thanks to Matt Boyd at the University of Washington for extensive testing assistance!
