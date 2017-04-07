@@ -1,13 +1,27 @@
 # audiorecorder
 
-## A work in progress to create a free tool for the calibration and recording of analog audio signals
+###  A work in progress to create a free tool for the calibration and recording of analog audio signals
 
-Can be installed via Homebrew: `brew tap amiaopensource/amiaos` and `brew install audiorecorder`.
+## Development information:
 
-Current Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
+## Installation:
+Can be installed on macOS via Homebrew with the following command: `brew tap amiaopensource/amiaos && brew install audiorecorder`.
 
-# Huge thanks to all contributors!
-## Contributors to date:
+Linuxbrew install testing is currently being conducted.
+
+
+## Usage:
+Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF insertion
+
+### Initial setup:
+To set up audiorecorder, first run the command `audiorecorder -e`. This will open an interface where settings such as recording bit depth and sample rate can be selected.  This is also where the option to embed BEXT metadata can be selected.
+
+To set the metadata that will be embedded in the BEXT chunk (if activated in the coniguration menu) run the command `audiorecorder -m`. This will open an interface where the desired values can be entered.
+
+### Preview:
+
+## Huge thanks to all contributors!
+### Contributors to date:
 privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice)
 
 Special thanks to Matt Boyd at the University of Washington for extensive testing assistance!
