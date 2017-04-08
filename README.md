@@ -22,7 +22,17 @@ To set up audiorecorder, first run the command `audiorecorder -e`. This will ope
 To set the metadata that will be embedded in the BEXT chunk (if activated in the coniguration menu) run the command `audiorecorder -m`. This will open an interface where the desired values can be entered.
 
 #### Explanation of Interface:
-1: Peak volume meters (dB), 2: Audio spectrum - lines (from left) represent 1, 5, 10, 15, 20kHz respectively, 3: Recording time, 4: Spectrogram, 5: Audio vecorscope, 6: Graph of peak volume values (dB) from -30 dB to 0 dB. Colored area represents -5 dB to 0 dB.
+1: Peak volume meters (dB)
+
+2: Audio spectrum - lines (from left) represent 1, 5, 10, 15, 20kHz respectively
+
+3: Recording time
+
+4: Spectrogram
+
+5: Audio vecorscope
+
+6: Graph of peak volume values (dB) from -30dB to 0dB. Colored area represents -5dB to 0dB.
 
 <img src="https://raw.githubusercontent.com/amiaopensource/audiorecorder/master/numbered_interface.png" alt="audiorecorder interface" height="350" width="350">
 
