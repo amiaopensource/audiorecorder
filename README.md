@@ -40,7 +40,7 @@ To set the metadata that will be embedded in the BEXT chunk (if activated in the
 Running `audiorecorder -p` will open the preview window. This window can be closed with the escape key. This allows you to check your settings and playback machine calibration using the audiorecorder interface without creating a file. It is recommended to use this mode before every recording. Once you are satisfied that everything is calibrated appropriately, move on to record mode.
 
 #### Record:
-Running the command `audiorecorder` will start record mode.  You will be promted for the name of the file created. __Wait until the audiorecorder interface opens__, and then press play on your playback machine. During recording do not resize the window, as this can cause problems with the audio buffer. To stop recording press the escape key.
+Running the command `audiorecorder` will start record mode.  You will be prompted for the name of the file created. __Wait until the audiorecorder interface opens__, and then press play on your playback machine. During recording do not resize the window, as this can cause problems with the audio buffer. To stop recording press the escape key.
 
 Once recording is complete, audiorecorder will process the file, and then an interface will open showing the waveform of the recorded file, as well as giving options to 'preview' and 'trim' the file.
 
