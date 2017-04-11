@@ -1,6 +1,6 @@
 # Development History
 
-**2017-04-11:** Version 0.1.01 released. Contains some basic interface workarounds to decrease reliance on Pashua for user input. This makes audiorecorder able to run in a linux environment.
+**2017-04-11:** Version 0.1.01 released. Contains some basic interface workarounds to decrease reliance on Pashua for user input. This makes audiorecorder able to run in a linux environment (further reliability testing for non macOS systems is underway).
 
 **2017-03-11:** Major redesign of post-digitization functions and GUI. Audiorecorder now supports trimming of start and end of files via manual specification as well as auto-trim of silence at the start of files. Preview and post-digitization GUI now incorporate waveforms of the digitized audio to aid in trimming. All testing has been negative for dropped samples.
 
