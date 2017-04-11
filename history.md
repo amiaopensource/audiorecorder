@@ -1,5 +1,7 @@
 # Development History
 
+**2017-04-11:** Version 0.1.01 released. Contains some basic interface workarounds to decrease reliance on Pashua for user input. This makes audiorecorder able to run in a linux environment.
+
 **2017-03-11:** Major redesign of post-digitization functions and GUI. Audiorecorder now supports trimming of start and end of files via manual specification as well as auto-trim of silence at the start of files. Preview and post-digitization GUI now incorporate waveforms of the digitized audio to aid in trimming. All testing has been negative for dropped samples.
 
 **2017-03-04:** For the new release changes have been made to streamline the way audiorecorder handles input channels. This will prevent it from being overwhelmed by A/D converters that output many empty tracks along with the desired tracks (such as the Apogee Symphony). In two 55 minute tests and one 30 minute no drops or problems were detected via Wavelab analysis. Due to more efficient management of data the current buffering now has increased the latency for mono captures. A next step will be to see how much buffering can be safely lowered.
