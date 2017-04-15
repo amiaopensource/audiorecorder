@@ -57,11 +57,14 @@ if [ ! "$pashuapath" ] && [[ $OSTYPE = darwin* ]]; then
     echo "Error: Pashua was not found. Proceeding with Nano. Please install Pashua a more functional interface."
     GUI_TEST=1
 fi
-if  ! [[ $OSTYPE = darwin* ]] ; then
-    GUI_TEST=1
-fi
 
-
+#Setup differences for systems
+if [[ OSTYPE = darwin* ]] ; then
+    FONTPATH='/Library/Fonts/Andale Mono.ttf'
+else
+   GUI_TEST=1
+   FONTPATH='/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+fi 
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
@@ -390,7 +393,7 @@ FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [d]astats=metadata=1:reset=1,adrawgraph=lavfi.astats.Overall.Peak_level:max=0:min=-30.0:size=700x256:bg=Black[dd],\
 [dd]drawbox=0:0:700:42:hotpink@0.2:t=42[ddd],\
 [aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[z],\
-[z]drawtext=fontfile=/Library/Fonts/Andale Mono.ttf: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
+[z]drawtext=fontfile="${FONTPATH}": text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
 # BEXT mode
 if [ "${runtype}" = "bext" ] ; then
