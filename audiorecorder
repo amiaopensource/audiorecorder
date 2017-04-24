@@ -59,7 +59,7 @@ if [ ! "$pashuapath" ] && [[ $OSTYPE = darwin* ]]; then
 fi
 
 #Setup differences for systems
-if [[ OSTYPE = darwin* ]] ; then
+if [[ ${OSTYPE} = darwin* ]] ; then
     FONTPATH='/Library/Fonts/Andale Mono.ttf'
 else
     GUI_TEST=1
