@@ -3,12 +3,12 @@
 # audiorecorder
 
 VERSION=$(TMP=$(brew info audiorecorder | grep -Eo "/audiorecorder/.* \(") ; echo ${TMP:15:(${#TMP}-17)})
-config="$HOME/.$(basename "${0}").conf"
-bwf_config="$HOME/.$(basename "${0}")_BWF.conf"
+config="${HOME}/.$(basename "${0}").conf"
+bwf_config="${HOME}/.$(basename "${0}")_BWF.conf"
 touch "${config}"
 touch "${bwf_config}"
 touch ~/.config/mpv/input.conf
-. "$config"
+. "${config}"
 . "${bwf_config}"
 #Set mpv to quit with same key as ffplay
 echo "ESC quit" > ~/.config/mpv/input.conf
@@ -18,12 +18,12 @@ cat <<EOF
 $(basename "${0}") ${VERSION}
 Tool for calibration and recording of analog audio sources.
 
-Usage: $(basename "${0}") [ -h | -e | -p | -m | -b ]
-  -h  display this help menu
+Usage: $(basename "${0}") [ -e | -p | -m | -b | -h ]
   -e  edit
   -p  passthrough
   -m  metadata
   -b  bext
+  -h  display this help menu
 EOF
 }
 
@@ -65,6 +65,7 @@ else
     GUI_TEST=1
     FONTPATH='/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
 fi 
+
 _lookup_sample_rate(){
     case "${1}" in
         "44.1 kHz")
@@ -199,6 +200,7 @@ _master_gui(){
     cb.type = cancelbutton
     cb.label = Cancel
     "
+
     if  ! [ "${GUI_TEST}" = 1 ] ; then
         pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
         echo "${gui_conf}" > "${pashua_configfile}"
@@ -258,6 +260,7 @@ _post_digitization_gui(){
     exit.type = defaultbutton
     exit.label = Finish
     "
+
     if  ! [ "${GUI_TEST}" = 1 ] ; then
         pashua_configfile=$(/usr/bin/mktemp /tmp/pashua_XXXXXXXXX)
         echo "${post_gui_conf}" > "${pashua_configfile}"
@@ -267,7 +270,7 @@ _post_digitization_gui(){
         preview=""
         trim=""
         post_dig_opt=(preview trim exit)
-        post_dig=$(dialog --title "Select Action"  --radiolist "Click or use arrow keys and space bar to select" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
+        post_dig=$(dialog --title "Select Action" --radiolist "Click or use arrow keys and space bar to select" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
         if [ "${post_dig}" = "trim" ] ; then
             StartTrimLength=$(dialog --title "Start Trim Length" --inputbox "Enter seconds to trim from start of file. Leave blank for auto. Enter 0 if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
             EndTrimLength=$(dialog --title "End Trim Length" --inputbox "Enter seconds to trim from end of file. Leave blank if no trimming is desired." 8 50 3>&1 1>&2 2>&3 3>&-)
@@ -284,8 +287,7 @@ _post_digitization_gui(){
                 ;;
         esac
     fi
-        
-    
+
     if [ "${preview}" = "1" ] ; then
         _preview_file && _post_digitization_gui
     fi
@@ -293,7 +295,6 @@ _post_digitization_gui(){
     if [ "${trim}" = "1" ] ; then
         _trim_file && _post_digitization_gui
     fi
-    
 }
 
 _embed_bext(){
