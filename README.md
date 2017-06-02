@@ -6,11 +6,15 @@
 For updates and history of development please see [this page](https://github.com/amiaopensource/audiorecorder/blob/master/history.md).
 
 ## Installation:
-Can be installed on macOS via Homebrew with the following command: 
+
+audiorecorder can be installed via [homebrew](https://brew.sh/) on macOS and [linuxbrew](http://linuxbrew.sh/) on Linux.
+
+__MacOS Installation__:
+Audiorecorder can be installed via Homebrew with the following command:
 
 `brew tap amiaopensource/amiaos && brew install audiorecorder`.
 
-Linuxbrew install testing is currently being conducted.
+__Linux Installation__ :
 
 
 ## Usage:
