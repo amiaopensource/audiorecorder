@@ -14,7 +14,27 @@ Audiorecorder can be installed via Homebrew with the following command:
 
 `brew tap amiaopensource/amiaos && brew install audiorecorder`.
 
-__Linux Installation__ :
+__Linux Installation__ : (Tested in Ubuntu 16.04)
+
+The folliwing division of commands seeks to install up-to-date versions of audiorecorder dependencies while avoiding conflicts.
+
+__Standard package manager commands:__
+
+`sudo apt-get install sox`
+
+`sudo apt-get install libsdl2-2.0`
+
+Install current [MPV](https://mpv.io/installation/) ppa, then `sudo apt-get install mpv`
+
+__linuxbrew commands:__
+
+`brew install dialog`
+
+`brew install ffmpeg --with-freetype --with-sdl2`
+
+`brew uninstall --ignore-dependencies sdl2`
+
+`brew install --ignore-dependencies audiorecorder`
 
 
 ## Usage:
