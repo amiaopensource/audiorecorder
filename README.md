@@ -1,6 +1,6 @@
 # audiorecorder
 
-####  A work in progress to create a free tool for the calibration and recording of analog audio signals
+####  A free tool for the calibration and recording of analog audio signals
 
 ## Development information:
 For updates and history of development please see [this page](https://github.com/amiaopensource/audiorecorder/blob/master/history.md).
@@ -10,15 +10,17 @@ For updates and history of development please see [this page](https://github.com
 audiorecorder can be installed via [homebrew](https://brew.sh/) on macOS and [linuxbrew](http://linuxbrew.sh/) on Linux.
 
 __MacOS Installation__:
-Audiorecorder can be installed via Homebrew with the following command:
+Audiorecorder can be installed via Homebrew with the following commands:
 
-`brew tap amiaopensource/amiaos && brew install audiorecorder`.
+`brew tap amiaopensource/amiaos`
 
-__Linux Installation__ : (Tested in Ubuntu 16.04)
+`brew install audiorecorder`
 
-The folliwing division of commands seeks to install up-to-date versions of audiorecorder dependencies while avoiding conflicts.
+__Linux Installation__ (Tested in Ubuntu 16.04)
 
-__Standard package manager commands:__
+The following division of commands seeks to install up-to-date versions of audiorecorder dependencies while avoiding conflicts.
+
+__Standard package manager commands__
 
 `sudo apt-get install sox`
 
@@ -26,11 +28,15 @@ __Standard package manager commands:__
 
 Install current [MPV](https://mpv.io/installation/) ppa, then `sudo apt-get install mpv`
 
-__linuxbrew commands:__
+__linuxbrew commands__
 
 `brew install dialog`
 
+If FFmpeg has already been installed with these options then skip next step. 
+
 `brew install ffmpeg --with-freetype --with-sdl2`
+
+sdl2 is necessary to build FFmpeg with FFplay, but removing it after build will avoid conflicts between other installations of sdl2.
 
 `brew uninstall --ignore-dependencies sdl2`
 
