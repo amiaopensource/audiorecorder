@@ -101,6 +101,7 @@ _lookup_channel_layout(){
             ;;
         "1 and 2")
             CHANNEL_LAYOUT="-channel_layout stereo" && SOXCHANNELS="1 2"
+            ;;
     esac
 }
 
