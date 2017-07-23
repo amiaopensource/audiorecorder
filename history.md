@@ -1,5 +1,7 @@
 # Development History
 
+**2017-06-05:** Version 0.1.03 released. Linux install instructions, man page and Code of Conduct have been added.
+
 **2017-04-25:** Version 0.1.02 released. Includes font support for filters in Linux. (Tested in Ubuntu 16.04).
 
 **2017-04-11:** Version 0.1.01 released. Contains some basic interface workarounds to decrease reliance on Pashua for user input. This makes audiorecorder able to run in a linux environment (further reliability testing for non macOS systems is underway).
