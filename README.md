@@ -49,7 +49,7 @@ Usage: [-p] passthrough mode, [-e] edit config, [-m] edit metadata for BWF inser
 #### Initial setup:
 To set up audiorecorder, first run the command `audiorecorder -e`. This will open an interface where settings such as recording bit depth and sample rate can be selected. This is also where the option to embed BEXT metadata can be selected.
 
-To set the metadata that will be embedded in the BEXT chunk (if activated in the coniguration menu) run the command `audiorecorder -m`. This will open an interface where the desired values can be entered.
+To set the metadata that will be embedded in the BEXT chunk (if activated in the configuration menu) run the command `audiorecorder -m`. This will open an interface where the desired values can be entered.
 
 #### Explanation of Interface:
 1: Peak volume meters (dB)
@@ -74,7 +74,7 @@ Running the command `audiorecorder` will start record mode.  You will be prompte
 
 Once recording is complete, audiorecorder will process the file, and then an interface will open showing the waveform of the recorded file, as well as giving options to 'preview' and 'trim' the file.
 
-Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'. If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is neccessary. Once you are done, press 'Finish' to finalize and quit. It is at this point that BEXT metadata will be embedded if that option has been selected.
+Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'. If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is necessary. Once you are done, press 'Finish' to finalize and quit. It is at this point that BEXT metadata will be embedded if that option has been selected.
 
 ## Huge thanks to all contributors to audiorecorder!
 #### Contributors to date:
