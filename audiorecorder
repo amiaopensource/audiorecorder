@@ -14,7 +14,7 @@ touch ~/.config/mpv/input.conf
 echo "ESC quit" > ~/.config/mpv/input.conf
 
 _usage(){
-cat <<EOF
+    cat <<EOF
 $(basename "${0}") ${VERSION}
 Tool for calibration and recording of analog audio sources.
 
@@ -27,14 +27,13 @@ Usage: $(basename "${0}") [ -e | -p | -m | -b | -h ]
 EOF
 }
 
-OPTIND=1
-while getopts ":hepmb" opt ; do
+while getopts ":epmbh" opt ; do
     case "${opt}" in
+        e) runtype="edit" ; shift ;;
+        p) runtype="passthrough" ; shift ;;
+        m) runtype="metadata" ; shift ;;
+        b) runtype="bext" ; shift ;;
         h) _usage ; exit 0 ;;
-        e) runtype="edit" ;;
-        p) runtype="passthrough" ;;
-        m) runtype="metadata" ;;
-        b) runtype="bext";;
         *) echo "Error: bad option -${OPTARG}" ; _usage ; exit 1 ;;
     esac
 done
@@ -53,13 +52,13 @@ do
         break
     fi
 done
-if [ ! "$pashuapath" ] && [[ $OSTYPE = darwin* ]]; then
+if [ ! "$pashuapath" ] && [[ "$(uname -s)" = "Darwin" ]]; then
     echo "Error: Pashua was not found. Proceeding with Nano. Please install Pashua a more functional interface."
     GUI_TEST=1
 fi
 
 #Setup differences for systems
-if [[ ${OSTYPE} = darwin* ]] ; then
+if [[ "$(uname -s)" = "Darwin" ]] ; then
     FONTPATH='/Library/Fonts/Andale Mono.ttf'
 else
     GUI_TEST=1
