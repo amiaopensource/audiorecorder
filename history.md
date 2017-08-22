@@ -1,5 +1,7 @@
 # Development History
 
+**2017-08-22:** Version 0.1.04 released. Mainly doc fixes.
+
 **2017-06-05:** Version 0.1.03 released. Linux install instructions, man page and Code of Conduct have been added.
 
 **2017-04-25:** Version 0.1.02 released. Includes font support for filters in Linux. (Tested in Ubuntu 16.04).
