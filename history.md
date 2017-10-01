@@ -1,5 +1,7 @@
 # Development History
 
+**2017-10-01:** Version 0.1.05 released. Deletes BWF Metaedit from the package and uses its homebrew formula instead.
+
 **2017-08-22:** Version 0.1.04 released. Mainly doc fixes.
 
 **2017-06-05:** Version 0.1.03 released. Linux install instructions, man page and Code of Conduct have been added.
