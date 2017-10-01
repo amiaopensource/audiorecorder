@@ -87,9 +87,3 @@ Special thanks to Matt Boyd at the University of Washington for extensive testin
 The audiorecorder script is covered under a [BSD 3-clause license](https://github.com/amiaopensource/audiorecorder/blob/master/LICENSE.txt)
 
 <a rel="license" href="https://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a><br>All documentation for audiorecorder is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/4.0/">Creative Commons Attribution 4.0 International License</a>.
-
-BWF Metaedit
-
->This code was created in 2010 for the Library of Congress and the other federal government agencies participating in the Federal Agencies Digitization Guidelines Initiative and it is in the public domain.
-
-Detailed BWF Metaedit License available [here](https://mediaarea.net/BWFMetaEdit/License).
