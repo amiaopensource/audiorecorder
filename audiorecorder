@@ -21,8 +21,8 @@ Tool for calibration and recording of analog audio sources.
 Usage: $(basename "${0}") [ -e | -p | -m | -b | -h ]
   -e  edit config
   -p  passthrough mode
-  -m  edit metadata for BWF insertion
-  -b  embed in the BEXT chunk
+  -m  edit metadata to be used in BWF creation
+  -b  embed BEXT chunk (BWF metadata) in target file
   -h  display this help menu
 
 See also the man page: man $(basename "${0}")
