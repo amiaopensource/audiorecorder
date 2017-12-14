@@ -384,7 +384,6 @@ else
     echo "No Channel Layout Specified. Setting Input to Channels 1 and 2"
     channel_layout="1 and 2"
 fi
-_destination_check
 
 FILTER_CHAIN="asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
@@ -413,6 +412,8 @@ if [ "${runtype}" = "passthrough" ] ; then
     stty sane
     exit
 fi
+
+_destination_check
 
 # Record Mode
 _get_ITEM_ID
