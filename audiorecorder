@@ -49,12 +49,12 @@ mypath=$(dirname "${0}")
 for searchpath in "$mypath/Pashua" "$mypath/$bundlepath" "./$bundlepath" \
                   "/Applications/$bundlepath" "$HOME/Applications/$bundlepath"
 do
-    if [ -f "$searchpath" -a -x "$searchpath" ] ; then
-        pashuapath=$searchpath
+    if [ -f "${searchpath}" -a -x "${searchpath}" ] ; then
+        pashuapath=${searchpath}
         break
     fi
 done
-if [ ! "$pashuapath" ] && [[ "$(uname -s)" = "Darwin" ]]; then
+if [ ! "${pashuapath}" ] && [[ "$(uname -s)" = "Darwin" ]]; then
     echo "Error: Pashua was not found. Proceeding with Nano. Please install Pashua a more functional interface."
     GUI_TEST=1
 fi
@@ -269,8 +269,8 @@ _post_digitization_gui(){
         pashua_run
         rm "${pashua_configfile}"
     else
-        preview=""
-        trim=""
+        unset preview
+        unset trim
         post_dig_opt=(preview trim exit)
         post_dig=$(dialog --title "Select Action" --radiolist "Click or use arrow keys and space bar to select" 15 60 4 "${post_dig_opt[0]}" "file" ON "${post_dig_opt[1]}" "file" OFF "${post_dig_opt[2]}" "audiorecorder" OFF 3>&1 1>&2 2>&3 3>&-)
         if [ "${post_dig}" = "trim" ] ; then
@@ -321,16 +321,16 @@ pashua_run() {
     # , as in a doubleclickable application, cwd is /
     # BTW, all these quotes below are necessary to handle paths
     # containing spaces.
-    encoding=""
+
     # Get result
-    result=$("$pashuapath" $encoding $pashua_configfile | sed 's/ /;;;/g')
+    result=$("$pashuapath" ${pashua_configfile} | sed 's/ /;;;/g')
 
     # Parse result
     for line in $result ; do
-        key=$(echo $line | sed 's/^\([^=]*\)=.*$/\1/')
-        value=$(echo $line | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g')
-        varname=$key
-        varvalue="$value"
+        key=$(echo ${line} | sed 's/^\([^=]*\)=.*$/\1/')
+        value=$(echo ${line} | sed 's/^[^=]*=\(.*\)$/\1/' | sed 's/;;;/ /g')
+        varname=${key}
+        varvalue="${value}"
         eval $varname='$varvalue'
     done
 } # pashua_run()
@@ -369,13 +369,13 @@ fi
 if [ -n "${sample_rate}" ] ; then
     _lookup_sample_rate "${sample_rate}"
 else
-    echo "No Sample Rate Specified.  Setting to 96kH."
+    echo "No Sample Rate Specified. Setting to 96kH."
     SAMPLE_RATE_NUMERIC="96000"
 fi
 if [ -n "${bit_depth}" ] ; then
     _lookup_bit_depth  "${bit_depth}"
 else
-    echo "No Bit Depth Specified.  Setting to 24."
+    echo "No Bit Depth Specified. Setting to 24."
     CODEC="pcm_s24le"
 fi
 if [ -n "${channel_layout}" ] ; then
@@ -472,13 +472,13 @@ _trim_file(){
     elif [ -n "${EndTrimLength}" ] && ! [[ "${EndTrimLength}" =~ ^[+]?[0-9]+\.?[0-9]*$ ]] ; then 
         echo "Please use only (positive) numbers for the trim length"
     else
-    if [ -z "${TRIMCHECK}" ] ; then
+    if [[ -z "${TRIMCHECK}" ]] ; then
         _set_up_trim "${FINALOUTPUT}"
          mv "${FINALOUTPUT}" "${PRETRIM}"
     else
          _set_up_trim "${PRETRIM}"
     fi
-    if [ "${StartTrimLength}" = "" ] ; then
+    if [[ -z "${StartTrimLength}" ]] ; then
         if [ -n "${EndTrimLength}" ] ; then
             ffmpeg -i "${PRETRIM}" -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a "${CODEC}" -ar "${SAMPLE_RATE_NUMERIC}" -rf64 auto -y INTERMEDIATE.wav
             _set_up_trim INTERMEDIATE.wav
@@ -493,8 +493,8 @@ _trim_file(){
     TRIMCHECK='1'
         mpv --force-window --no-terminal --keep-open=yes --title="Preview Trim" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" "${FINALOUTPUT}"
     fi
-    STARTTRIMOPT=""
-    ENDTRIMOPT=""
+    unset STARTTRIMOPT
+    unset ENDTRIMOPT
 }
 
 # Cleans up and loads post digitization option GUI
