@@ -1,5 +1,11 @@
 # Development History
 
+**2017-12-26:** Version 0.1.08 released. Mainly typo fixes.
+
+**2017-12-14:** Version 0.1.07 released. Fix bug. Stricter man page syntax.
+
+**2017-10-18:** Version 0.1.06 released. Improved help message and man page.
+
 **2017-10-01:** Version 0.1.05 released. Deletes BWF Metaedit from the package and uses its homebrew formula instead.
 
 **2017-08-22:** Version 0.1.04 released. Mainly doc fixes.
