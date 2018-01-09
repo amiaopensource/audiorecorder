@@ -2,7 +2,7 @@
 
 # audiorecorder
 
-VERSION=$(TMP=$(brew info audiorecorder | grep -Eo "/audiorecorder/.* \(") ; echo ${TMP:15:(${#TMP}-17)})
+VERSION=$(TMP=$(brew info audiorecorder | grep ".*\*$" | grep -Eo "/audiorecorder/.* \(") ; echo ${TMP:15:(${#TMP}-17)})
 config="${HOME}/.$(basename "${0}").conf"
 bwf_config="${HOME}/.$(basename "${0}")_BWF.conf"
 touch "${config}"
