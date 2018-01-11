@@ -1,6 +1,10 @@
 require 'yaml'
 
 # Recording Variables
+if RUBY_PLATFORM.include?('linux')
+  Drawfontpath = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+end
+
 FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
 [e]showvolume=w=700:c=0xff0000:r=30[e1],\
 [a]showfreqs=mode=bar:cmode=separate:size=300x300:colors=magenta|yellow[a1],\
@@ -10,18 +14,17 @@ FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
 [c]showspectrum=s=400x600:slide=scroll:mode=combined:color=rainbow:scale=lin:saturation=4[cc],\
 [d]astats=metadata=1:reset=1,adrawgraph=lavfi.astats.Overall.Peak_level:max=0:min=-30.0:size=700x256:bg=Black[dd],\
 [dd]drawbox=0:0:700:42:hotpink@0.2:t=42[ddd],\
-[aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[out0]"
+[aa][bb]vstack[aabb],[aabb][cc]hstack[aabbcc],[aabbcc][ddd]vstack[aabbccdd],[e1][aabbccdd]vstack[z],\
+[z]drawtext=fontfile=#{Drawfontpath}: text='%{pts \\: hms}':x=460: y=50:fontcolor=white:fontsize=30:box=1:boxcolor=0x00000000@1[fps],[fps]fps=fps=30[out0]"
 
+# Set Configuration
 sox_channels = '1 2'
 ffmpeg_channels = 'stereo'
 codec_choice = 'pcm_s24le'
 soxbuffer = '50000'
 sample_rate_choice = '96000'
 
-if RUBY_PLATFORM.include?('linux')
-  Drawfontpath = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
-end
-
+# Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
 if ! File.exist?(configuration_file)
   config_options = "destination:\nsamplerate:\nchannels:\ncodec:"
