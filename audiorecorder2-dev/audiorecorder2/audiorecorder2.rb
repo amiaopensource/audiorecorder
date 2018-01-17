@@ -129,9 +129,22 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
         stack do
           para "Please Make Selections"
           para "Originator"
-          originator_choice = edit_line
+          originator_choice = edit_line text = originator do
+            originator = originator_choice.text
+          end
           para "Coding History"
-          history_choice = edit_box
+          history_choice = edit_box text = history do
+            history = history_choice.text
+          end
+          button "Save Settings" do
+            config['destination'] = outputdir
+            config['samplerate'] = sample_rate_choice
+            config['channels'] = sox_channels
+            config['codec'] = codec_choice
+            config['orig'] = originator
+            config['hist'] = history
+            File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
+          end
         end
       end
     end
@@ -141,6 +154,8 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       config['samplerate'] = sample_rate_choice
       config['channels'] = sox_channels
       config['codec'] = codec_choice
+      config['orig'] = originator
+      config['hist'] = history
       File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
     end
 
