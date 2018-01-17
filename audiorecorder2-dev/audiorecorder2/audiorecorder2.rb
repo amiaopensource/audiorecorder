@@ -43,8 +43,6 @@ def EmbedBEXT(targetfile)
   moddatetime = File.mtime(targetfile)
   moddate = moddatetime.strftime("%Y-%m-%d")
   modtime = moddatetime.strftime("%H:%M:%S")
-  originator = 'WAU'
-  history = 'From Tape'
   bwfmetaeditpath = 'bwfmetaedit'
 
   #Get Input Name for Description and OriginatorReference
@@ -126,8 +124,15 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     end
 
     button "Edit BWF Metadata" do
-      window(title: "A new window") do
-        para "Please Make Selections"
+      window(title: "A new window", width: 600, height: 500) do
+        background aliceblue
+        stack do
+          para "Please Make Selections"
+          para "Originator"
+          originator_choice = edit_line
+          para "Coding History"
+          history_choice = edit_box
+        end
       end
     end
 
