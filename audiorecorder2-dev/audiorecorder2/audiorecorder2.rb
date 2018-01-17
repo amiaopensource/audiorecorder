@@ -27,7 +27,7 @@ sample_rate_choice = '96000'
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
 if ! File.exist?(configuration_file)
-  config_options = "destination:\nsamplerate:\nchannels:\ncodec:"
+  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist"
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
@@ -35,6 +35,27 @@ outputdir = config['destination']
 sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
 codec_choice = config['codec']
+originator = config['orig']
+history = config['hist']
+
+#BWF Metaedit Function
+def EmbedBEXT(targetfile)
+  moddatetime = File.mtime(targetfile)
+  moddate = moddatetime.strftime("%Y-%m-%d")
+  modtime = moddatetime.strftime("%H:%M:%S")
+  originator = 'WAU'
+  history = 'From Tape'
+  bwfmetaeditpath = 'bwfmetaedit'
+
+  #Get Input Name for Description and OriginatorReference
+  file_name = File.basename(targetfile)
+  originatorreference = File.basename(targetfile, '.wav')
+  if originatorreference.length > 32
+    originatorreference = "See Description for Identifiers"
+  end
+  command = bwfmetaeditpath +  ' --reject-overwrite' + ' --Description=' + "'" + file_name + "'" + ' --Originator=' + "'" + originator + "'" + ' --OriginatorReference=' + originatorreference + ' --History=' + "'" + history + "'" + ' --IARL=' + originator + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + targetfile
+  system(command)
+end
 
 # GUI App
 Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
