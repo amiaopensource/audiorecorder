@@ -27,7 +27,7 @@ sample_rate_choice = '96000'
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
 if ! File.exist?(configuration_file)
-  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist"
+  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist:"
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
