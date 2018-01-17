@@ -144,6 +144,11 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
             config['orig'] = originator
             config['hist'] = history
             File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
+            close()
+          end
+          close = button "Close Without Saving"
+          close.click do
+            close()
           end
         end
       end
