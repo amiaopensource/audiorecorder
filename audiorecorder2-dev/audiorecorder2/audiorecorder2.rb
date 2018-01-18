@@ -51,8 +51,8 @@ def EmbedBEXT(targetfile)
   if originatorreference.length > 32
     originatorreference = "See Description for Identifiers"
   end
-  command = bwfmetaeditpath +  ' --reject-overwrite' + ' --Description=' + "'" + file_name + "'" + ' --Originator=' + "'" + originator + "'" + ' --OriginatorReference=' + originatorreference + ' --History=' + "'" + history + "'" + ' --IARL=' + originator + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + targetfile
-  system(command)
+  bextcommand = bwfmetaeditpath +  ' --reject-overwrite' + ' --Description=' + "'" + file_name + "'" + ' --Originator=' + "'" + originator + "'" + ' --OriginatorReference=' + originatorreference + ' --History=' + "'" + history + "'" + ' --IARL=' + originator + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + targetfile
+  system(bextcommand)
 end
 
 # GUI App
@@ -112,15 +112,18 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     record = button "Record"
     record.click do
       filename = ask("Please Enter File Name")
-      @fileoutput = '"' + outputdir + '/' + filename + '"'
+      @tempfileoutput = '"' + outputdir + '/' + filename + '"'
+      @fileoutput = '"' + outputdir + '/' + filename + '.wav' + '"'
       Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + @fileoutput
+      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + @tempfileoutput
       FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
-      command = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      system(command)
+      syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
+      syscommand2 = 'ffmpeg -i ' + @tempfileoutput + ' -c copy ' + @fileoutput + ' && rm ' + @tempfileoutput
+      system(syscommand1) && system(syscommand2)
+      EmbedBEXT(@fileoutput)
     end
 
     button "Edit BWF Metadata" do
