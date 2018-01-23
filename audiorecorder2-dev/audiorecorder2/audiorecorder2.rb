@@ -116,12 +116,12 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       @fileoutput = outputdir + '/' + filename + '.wav'
       Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + @tempfileoutput
+      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
       FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
       syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      syscommand2 = 'ffmpeg -i ' + @tempfileoutput + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + @tempfileoutput
+      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
       system(syscommand1) && system(syscommand2)
       EmbedBEXT(@fileoutput)
     end
