@@ -35,8 +35,8 @@ outputdir = config['destination']
 sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
 codec_choice = config['codec']
-originator = config['orig']
-history = config['hist']
+$originator = config['orig']
+$history = config['hist']
 
 #BWF Metaedit Function
 def EmbedBEXT(targetfile)
@@ -51,8 +51,8 @@ def EmbedBEXT(targetfile)
   if originatorreference.length > 32
     originatorreference = "See Description for Identifiers"
   end
-  bextcommand = bwfmetaeditpath +  ' --reject-overwrite' + ' --Description=' + "'" + file_name + "'" + ' --Originator=' + "'" + originator + "'" + ' --OriginatorReference=' + originatorreference + ' --History=' + "'" + history + "'" + ' --IARL=' + originator + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + targetfile
-  system(bextcommand)
+  bwfcommand = bwfmetaeditpath + ' --reject-overwrite ' + '--Description=' + "'" + file_name + "'"  + ' --Originator=' + "'" + $originator + "'" + ' --History=' + "'" + $history + "'" + ' --OriginatorReference=' + "'" + originatorreference + "'" + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + "'" + targetfile + "'"
+  system(bwfcommand)
 end
 
 # GUI App
@@ -127,25 +127,25 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     end
 
     button "Edit BWF Metadata" do
-      window(title: "A new window", width: 600, height: 500) do
+      window(title: "Edit BWF Metadata", width: 600, height: 500) do
         background aliceblue
         stack do
           para "Please Make Selections"
           para "Originator"
-          originator_choice = edit_line text = originator do
-            originator = originator_choice.text
+          originator_choice = edit_line text = $originator do
+            $originator = originator_choice.text
           end
           para "Coding History"
-          history_choice = edit_box text = history do
-            history = history_choice.text
+          history_choice = edit_box text = $history do
+            $history = history_choice.text
           end
           button "Save Settings" do
             config['destination'] = outputdir
             config['samplerate'] = sample_rate_choice
             config['channels'] = sox_channels
             config['codec'] = codec_choice
-            config['orig'] = originator
-            config['hist'] = history
+            config['orig'] = $originator
+            config['hist'] = $history
             File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
             close()
           end
@@ -162,8 +162,8 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       config['samplerate'] = sample_rate_choice
       config['channels'] = sox_channels
       config['codec'] = codec_choice
-      config['orig'] = originator
-      config['hist'] = history
+      config['orig'] = $originator
+      config['hist'] = $history
       File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
     end
 
