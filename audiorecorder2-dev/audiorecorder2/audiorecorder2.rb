@@ -27,7 +27,7 @@ sample_rate_choice = '96000'
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
 if ! File.exist?(configuration_file)
-  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist:"
+  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist:\nbext:"
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
@@ -37,7 +37,7 @@ sox_channels = config['channels']
 codec_choice = config['codec']
 $originator = config['orig']
 $history = config['hist']
-
+$embedbext = config['bext']
 #BWF Metaedit Function
 def EmbedBEXT(targetfile)
   moddatetime = File.mtime(targetfile)
@@ -123,7 +123,9 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
       syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
       system(syscommand1) && system(syscommand2)
-      EmbedBEXT(@fileoutput)
+      if $embedbext == 'true'
+        EmbedBEXT(@fileoutput)
+      end
     end
 
     button "Edit BWF Metadata" do
@@ -139,6 +141,22 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
           history_choice = edit_box text = $history do
             $history = history_choice.text
           end
+          flow do
+            bextswitch = check
+            if $embedbext == 'true'
+              bextswitch.checked = true
+            elsif $embedbext =='false'
+              bextswitch.checked = false
+            end 
+            para "Embed BFW Metadata?"
+            bextswitch.click do
+              if bextswitch.checked?
+                $embedbext = 'true'
+              else
+                $embedbext = 'false'
+              end
+            end
+          end
           button "Save Settings" do
             config['destination'] = outputdir
             config['samplerate'] = sample_rate_choice
@@ -146,10 +164,11 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
             config['codec'] = codec_choice
             config['orig'] = $originator
             config['hist'] = $history
+            config['bext'] = $embedbext
             File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
             close()
           end
-          close = button "Close Without Saving"
+          close = button "Cancel"
           close.click do
             close()
           end
@@ -164,6 +183,7 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       config['codec'] = codec_choice
       config['orig'] = $originator
       config['hist'] = $history
+      config['bext'] = $embedbext
       File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
     end
 
