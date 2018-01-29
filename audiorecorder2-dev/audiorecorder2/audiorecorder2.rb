@@ -27,7 +27,7 @@ sample_rate_choice = '96000'
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
 if ! File.exist?(configuration_file)
-  config_options = "destination:\nsamplerate:\nchannels:\ncodec:"
+  config_options = "destination:\nsamplerate:\nchannels:\ncodec:\norig:\nhist:"
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
@@ -35,6 +35,25 @@ outputdir = config['destination']
 sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
 codec_choice = config['codec']
+$originator = config['orig']
+$history = config['hist']
+
+#BWF Metaedit Function
+def EmbedBEXT(targetfile)
+  moddatetime = File.mtime(targetfile)
+  moddate = moddatetime.strftime("%Y-%m-%d")
+  modtime = moddatetime.strftime("%H:%M:%S")
+  bwfmetaeditpath = 'bwfmetaedit'
+
+  #Get Input Name for Description and OriginatorReference
+  file_name = File.basename(targetfile)
+  originatorreference = File.basename(targetfile, '.wav')
+  if originatorreference.length > 32
+    originatorreference = "See Description for Identifiers"
+  end
+  bwfcommand = bwfmetaeditpath + ' --reject-overwrite ' + '--Description=' + "'" + file_name + "'"  + ' --Originator=' + "'" + $originator + "'" + ' --History=' + "'" + $history + "'" + ' --OriginatorReference=' + "'" + originatorreference + "'" + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + "'" + targetfile + "'"
+  system(bwfcommand)
+end
 
 # GUI App
 Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
@@ -93,20 +112,48 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     record = button "Record"
     record.click do
       filename = ask("Please Enter File Name")
-      @fileoutput = '"' + outputdir + '/' + filename + '"'
+      @tempfileoutput = '"' + outputdir + '/' + filename + '"'
+      @fileoutput = outputdir + '/' + filename + '.wav'
       Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + @fileoutput
+      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
       FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
-      command = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      system(command)
+      syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
+      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+      system(syscommand1) && system(syscommand2)
+      EmbedBEXT(@fileoutput)
     end
 
     button "Edit BWF Metadata" do
-      window(title: "A new window") do
-        para "Please Make Selections"
+      window(title: "Edit BWF Metadata", width: 600, height: 500) do
+        background aliceblue
+        stack do
+          para "Please Make Selections"
+          para "Originator"
+          originator_choice = edit_line text = $originator do
+            $originator = originator_choice.text
+          end
+          para "Coding History"
+          history_choice = edit_box text = $history do
+            $history = history_choice.text
+          end
+          button "Save Settings" do
+            config['destination'] = outputdir
+            config['samplerate'] = sample_rate_choice
+            config['channels'] = sox_channels
+            config['codec'] = codec_choice
+            config['orig'] = $originator
+            config['hist'] = $history
+            File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
+            close()
+          end
+          close = button "Close Without Saving"
+          close.click do
+            close()
+          end
+        end
       end
     end
 
@@ -115,6 +162,8 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       config['samplerate'] = sample_rate_choice
       config['channels'] = sox_channels
       config['codec'] = codec_choice
+      config['orig'] = $originator
+      config['hist'] = $history
       File.open(configuration_file, 'w') {|f| f.write config.to_yaml }
     end
 
