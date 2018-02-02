@@ -1,4 +1,5 @@
 require 'yaml'
+require 'json'
 
 # Recording Variables
 if RUBY_PLATFORM.include?('linux')
@@ -73,6 +74,16 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       end
     end
 
+    def PostRecord(targetfile)
+      window(title: "Edit BWF Metadata", width: 600, height: 500) do
+        para targetfile
+        waveform = image("AUDIORECORDERTEMP.png")
+        para $ffprobeout['streams'][0]['duration']
+        duration = $ffprobeout['streams'][0]['duration']
+      end
+    end
+
+
     para "Sample Rate"
     samplerate = list_box items: ["44100", "48000", "96000"],
     width: 100, choose: sample_rate_choice do |list|
@@ -121,11 +132,14 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
       syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
       system(syscommand1) && system(syscommand2)
       if $embedbext == 'true'
         EmbedBEXT(@fileoutput)
       end
+      ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + @fileoutput + "'"
+      $ffprobeout = JSON.parse(`#{ffprobe_command}`)
+      PostRecord(@fileoutput)
     end
 
     button "Edit BWF Metadata" do
