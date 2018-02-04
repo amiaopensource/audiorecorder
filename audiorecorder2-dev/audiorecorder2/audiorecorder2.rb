@@ -86,6 +86,15 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
           command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + targetfile
           system(command)
         end
+        stack do
+          para 'Start Trim'
+          start_trim = edit_line
+        end
+        stack do
+          para 'End Trim'
+          end_trim = edit_line
+        end
+        trim = button "Trim"
       end
     end
 
