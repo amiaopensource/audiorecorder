@@ -57,7 +57,7 @@ def EmbedBEXT(targetfile)
 end
 
 # GUI App
-Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
+Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   style Shoes::Para, font: "Helvetica"
   background aliceblue
   @logo = image("Resources/audiorecorder_small.png", left: 160)
