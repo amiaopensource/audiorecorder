@@ -75,12 +75,13 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
     end
 
     def PostRecord(targetfile)
-      window(title: "Edit BWF Metadata", width: 600, height: 500) do
+      window(title: "Post-Record Options", width: 600, height: 500) do
         trimcheck = ''
         para targetfile
         waveform = image("AUDIORECORDERTEMP.png")
         para $ffprobeout['streams'][0]['duration']
-        duration = $ffprobeout['streams'][0]['duration']
+        @duration_json = $ffprobeout['streams'][0]['duration']
+        @duration =@duration_json.to_f
         preview = button "Preview"
         preview.click do
           command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + targetfile
@@ -88,13 +89,20 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         end
         stack do
           para 'Start Trim'
-          start_trim = edit_line
+          start_trim_input = edit_line do
+            @start_trim = start_trim_input.text.to_i
+          end
         end
         stack do
           para 'End Trim'
-          end_trim = edit_line
+          end_trim_input = edit_line do
+            @end_trim_length = end_trim_input.text.to_i
+          end
         end
         trim = button "Trim"
+        trim.click do
+          end_trim = @duration - @end_trim_length - @start_trim
+        end
       end
     end
 
