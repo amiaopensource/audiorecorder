@@ -140,21 +140,25 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       filename = ask("Please Enter File Name")
       @tempfileoutput = '"' + outputdir + '/' + filename + '"'
       @fileoutput = outputdir + '/' + filename + '.wav'
-      Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
-      FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
-      FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
-      FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
-      ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
-      syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
-      system(syscommand1) && system(syscommand2)
-      if $embedbext == 'true'
-        EmbedBEXT(@fileoutput)
+      if ! File.exist?(@fileoutput)
+        Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+        FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
+        FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+        FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
+        ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
+        syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
+        syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+        system(syscommand1) && system(syscommand2)
+        if $embedbext == 'true'
+          EmbedBEXT(@fileoutput)
+        end
+        ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + @fileoutput + "'"
+        $ffprobeout = JSON.parse(`#{ffprobe_command}`)
+        PostRecord(@fileoutput)
+      else
+        alert "A File named #{filename} already exists at that location!"
       end
-      ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + @fileoutput + "'"
-      $ffprobeout = JSON.parse(`#{ffprobe_command}`)
-      PostRecord(@fileoutput)
     end
 
     button "Edit BWF Metadata" do
