@@ -76,7 +76,9 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     def PostRecord(targetfile)
       window(title: "Post-Record Options", width: 600, height: 500) do
-        trimcheck = ''
+        trimcheck = nil
+        @pretrim = File.expand_path(File.basename(targetfile, File.extname(targetfile))) + 'untrimmed' + '.wav'
+        @finaloutput = targetfile
         para targetfile
         waveform = image("AUDIORECORDERTEMP.png")
         para $ffprobeout['streams'][0]['duration']
@@ -86,8 +88,13 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         @end_trim_length = nil
         preview = button "Preview"
         preview.click do
-          command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + targetfile
-          system(command)
+          if trimcheck.nil?
+            command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + '"' + @finaloutput + '"'
+            system(command)
+          else
+            command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + '"'+ @pretrim + '"'
+            system(command)
+          end
         end
         stack do
           para 'Start Trim'
@@ -103,11 +110,16 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         end
         trim = button "Trim"
         trim.click do
+          # set up trim
           if ! @end_trim_length.nil? && ! @start_trim_length.nil?
             end_trim_opt = @duration - @end_trim_length - @start_trim_length
           elsif ! @end_trim_length.nil?
             end_trim_opt = @duration - @end_trim_length
           end
+          if ! @start_trim_length.nil?
+            start_trim_opt = ' -ss ' + @start_trim_length.to_s
+          end
+          # Trim
         end
       end
     end
