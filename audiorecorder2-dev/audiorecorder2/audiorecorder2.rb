@@ -32,7 +32,7 @@ if ! File.exist?(configuration_file)
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
-outputdir = config['destination']
+$outputdir = config['destination']
 sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
 codec_choice = config['codec']
@@ -77,7 +77,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
     def PostRecord(targetfile)
       window(title: "Post-Record Options", width: 600, height: 500) do
         trimcheck = nil
-        @pretrim = File.expand_path(File.basename(targetfile, File.extname(targetfile))) + 'untrimmed' + '.wav'
+        @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
         @finaloutput = targetfile
         para targetfile
         waveform = image("AUDIORECORDERTEMP.png")
@@ -120,6 +120,10 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
             start_trim_opt = ' -ss ' + @start_trim_length.to_s
           end
           # Trim
+          if trimcheck.nil?
+            File.rename(@finaloutput, @pretrim)
+            trimcheck = 1
+          end
         end
       end
     end
@@ -140,12 +144,12 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
   stack margin: 10 do
     button "Choose Output Directory" do
-      outputdir = ask_open_folder
-      @destination.replace "#{outputdir}"
+      $outputdir = ask_open_folder
+      @destination.replace "#{$outputdir}"
     end
     flow do
       destination_prompt = para "File will be saved to:"
-      @destination = para "#{outputdir}", underline: "single"
+      @destination = para "#{$outputdir}", underline: "single"
     end 
   end
 
@@ -164,8 +168,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
     record = button "Record"
     record.click do
       filename = ask("Please Enter File Name")
-      @tempfileoutput = '"' + outputdir + '/' + filename + '"'
-      @fileoutput = outputdir + '/' + filename + '.wav'
+      @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
+      @fileoutput = $outputdir + '/' + filename + '.wav'
       if ! File.exist?(@fileoutput)
         Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
@@ -217,7 +221,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
             end
           end
           button "Save Settings" do
-            config['destination'] = outputdir
+            config['destination'] = $outputdir
             config['samplerate'] = sample_rate_choice
             config['channels'] = sox_channels
             config['codec'] = codec_choice
@@ -236,7 +240,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
     end
 
     button "Save Settings" do
-      config['destination'] = outputdir
+      config['destination'] = $outputdir
       config['samplerate'] = sample_rate_choice
       config['channels'] = sox_channels
       config['codec'] = codec_choice
