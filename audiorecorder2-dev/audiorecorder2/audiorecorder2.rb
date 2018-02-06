@@ -81,11 +81,22 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         @finaloutput = targetfile
         para targetfile
         waveform = image("AUDIORECORDERTEMP.png")
-        para $ffprobeout['streams'][0]['duration']
-        @duration_json = $ffprobeout['streams'][0]['duration']
-        @duration =@duration_json.to_f
         @start_trim = nil
         @end_trim_length = nil
+        def SetUpTrim(input)
+          ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + input + "'"
+          $ffprobeout = JSON.parse(`#{ffprobe_command}`)
+          @duration_json = $ffprobeout['streams'][0]['duration']
+          @duration =@duration_json.to_f
+          if ! @end_trim_length.nil? && ! @start_trim_length.nil?
+            $end_trim_opt = @duration - @end_trim_length - @start_trim_length
+          elsif ! @end_trim_length.nil?
+            $end_trim_opt = @duration - @end_trim_length
+          end
+          if ! @start_trim_length.nil?
+            $start_trim_opt = ' -ss ' + @start_trim_length.to_s
+          end
+        end
         preview = button "Preview"
         preview.click do
           if trimcheck.nil?
@@ -110,15 +121,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         end
         trim = button "Trim"
         trim.click do
-          # set up trim
-          if ! @end_trim_length.nil? && ! @start_trim_length.nil?
-            end_trim_opt = @duration - @end_trim_length - @start_trim_length
-          elsif ! @end_trim_length.nil?
-            end_trim_opt = @duration - @end_trim_length
-          end
-          if ! @start_trim_length.nil?
-            start_trim_opt = ' -ss ' + @start_trim_length.to_s
-          end
+          SetUpTrim(@finaloutput)
           # Trim
           if trimcheck.nil?
             File.rename(@finaloutput, @pretrim)
@@ -183,8 +186,6 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         if $embedbext == 'true'
           EmbedBEXT(@fileoutput)
         end
-        ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + @fileoutput + "'"
-        $ffprobeout = JSON.parse(`#{ffprobe_command}`)
         PostRecord(@fileoutput)
       else
         alert "A File named #{filename} already exists at that location!"
