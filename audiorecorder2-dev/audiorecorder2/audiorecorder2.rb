@@ -21,9 +21,9 @@ FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
 # Set Configuration
 sox_channels = '1 2'
 ffmpeg_channels = 'stereo'
-codec_choice = 'pcm_s24le'
+$codec_choice = 'pcm_s24le'
 soxbuffer = '50000'
-sample_rate_choice = '96000'
+$sample_rate_choice = '96000'
 
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
@@ -33,9 +33,9 @@ if ! File.exist?(configuration_file)
 end
 config = YAML::load_file(configuration_file)
 $outputdir = config['destination']
-sample_rate_choice = config['samplerate']
+$sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
-codec_choice = config['codec']
+$codec_choice = config['codec']
 $originator = config['orig']
 $history = config['hist']
 $embedbext = config['bext']
@@ -83,6 +83,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         waveform = image("AUDIORECORDERTEMP.png")
         @start_trim = nil
         @end_trim_length = nil
+
         def SetUpTrim(input)
           ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + input + "'"
           $ffprobeout = JSON.parse(`#{ffprobe_command}`)
@@ -97,6 +98,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
             $start_trim_opt = ' -ss ' + @start_trim_length.to_s
           end
         end
+
         preview = button "Preview"
         preview.click do
           if trimcheck.nil?
@@ -121,11 +123,29 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         end
         trim = button "Trim"
         trim.click do
-          SetUpTrim(@finaloutput)
-          # Trim
+          #set up trim
           if trimcheck.nil?
+            SetUpTrim(@finaloutput)
             File.rename(@finaloutput, @pretrim)
             trimcheck = 1
+          else
+            SetUpTrim(@pretrim)
+          end
+          if @start_trim_length.nil?
+            if ! @end_trim_length.nil?
+              precommand = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + 'INTERMEDIATE.wav'
+              system(precommand)
+              SetUpTrim('INTERMEDIATE.wav')
+              postcommand = 'ffmpeg -i INTERMEDIATE.wav -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+              system(postcommand)
+              File.delete('INTERMEDIATE.wav')
+            else
+              command = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + '"' + @finaloutput + '"'
+              system(command)
+            end
+          else
+            command = 'ffmpeg ' + $start_trim_opt + ' -i ' + '"' + @pretrim + '"' + ' -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+            system(command)
           end
         end
       end
@@ -134,14 +154,14 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     para "Sample Rate"
     samplerate = list_box items: ["44100", "48000", "96000"],
-    width: 100, choose: sample_rate_choice do |list|
-      sample_rate_choice = list.text
+    width: 100, choose: $sample_rate_choice do |list|
+      $sample_rate_choice = list.text
     end
 
     para "Codec"
     samplerate = list_box items: ["pcm_s16le", "pcm_s24le"],
-    width: 100, choose: codec_choice do |list|
-      codec_choice = list.text
+    width: 100, choose: $codec_choice do |list|
+      $codec_choice = list.text
     end
   end
 
@@ -159,7 +179,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   flow do
     preview = button "Preview"
     preview.click do
-      Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+      Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
       FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
@@ -174,9 +194,9 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
       @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
       @fileoutput = $outputdir + '/' + filename + '.wav'
       if ! File.exist?(@fileoutput)
-        Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+        Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-        FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
         FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
         FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
@@ -223,9 +243,9 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           end
           button "Save Settings" do
             config['destination'] = $outputdir
-            config['samplerate'] = sample_rate_choice
+            config['samplerate'] = $sample_rate_choice
             config['channels'] = sox_channels
-            config['codec'] = codec_choice
+            config['codec'] = $codec_choice
             config['orig'] = $originator
             config['hist'] = $history
             config['bext'] = $embedbext
@@ -242,9 +262,9 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     button "Save Settings" do
       config['destination'] = $outputdir
-      config['samplerate'] = sample_rate_choice
+      config['samplerate'] = $sample_rate_choice
       config['channels'] = sox_channels
-      config['codec'] = codec_choice
+      config['codec'] = $codec_choice
       config['orig'] = $originator
       config['hist'] = $history
       config['bext'] = $embedbext
