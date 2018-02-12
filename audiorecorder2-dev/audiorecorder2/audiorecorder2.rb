@@ -89,12 +89,12 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           $ffprobeout = JSON.parse(`#{ffprobe_command}`)
           @duration_json = $ffprobeout['streams'][0]['duration']
           @duration =@duration_json.to_f
-          if ! @end_trim_length.nil? && ! @start_trim_length.nil?
+          if ! @end_trim_length.nil? &&  @start_trim_length != "AUTO"
             $end_trim_opt = @duration - @end_trim_length - @start_trim_length
           elsif ! @end_trim_length.nil?
             $end_trim_opt = @duration - @end_trim_length
           end
-          if ! @start_trim_length.nil?
+          if @start_trim_length != "AUTO"
             $start_trim_opt = ' -ss ' + @start_trim_length.to_s
           end
         end
@@ -110,9 +110,14 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           end
         end
         stack do
+          @start_trim_length = "AUTO"
           para 'Start Trim'
-          start_trim_input = edit_line do
-            @start_trim_length = start_trim_input.text.to_f
+          start_trim_input = edit_line text = @start_trim_length do
+            if start_trim_input.text == "AUTO"
+              @start_trim_length = "AUTO"
+            else
+              @start_trim_length = start_trim_input.text.to_f
+            end
           end
         end
         stack do
@@ -131,7 +136,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           else
             SetUpTrim(@pretrim)
           end
-          if @start_trim_length.nil?
+          if @start_trim_length == "AUTO"
             if ! @end_trim_length.nil?
               precommand = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + 'INTERMEDIATE.wav'
               system(precommand)
