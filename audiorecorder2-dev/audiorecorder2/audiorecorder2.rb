@@ -112,13 +112,13 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         stack do
           para 'Start Trim'
           start_trim_input = edit_line do
-            @start_trim_length = start_trim_input.text.to_i
+            @start_trim_length = start_trim_input.text.to_f
           end
         end
         stack do
           para 'End Trim'
           end_trim_input = edit_line do
-            @end_trim_length = end_trim_input.text.to_i
+            @end_trim_length = end_trim_input.text.to_f
           end
         end
         trim = button "Trim"
