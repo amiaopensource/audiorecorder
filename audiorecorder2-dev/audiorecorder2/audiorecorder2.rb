@@ -1,4 +1,5 @@
 require 'yaml'
+require 'json'
 
 # Recording Variables
 if RUBY_PLATFORM.include?('linux')
@@ -20,9 +21,9 @@ FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
 # Set Configuration
 sox_channels = '1 2'
 ffmpeg_channels = 'stereo'
-codec_choice = 'pcm_s24le'
+$codec_choice = 'pcm_s24le'
 soxbuffer = '50000'
-sample_rate_choice = '96000'
+$sample_rate_choice = '96000'
 
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
@@ -31,10 +32,10 @@ if ! File.exist?(configuration_file)
   File.write(configuration_file, config_options)
 end
 config = YAML::load_file(configuration_file)
-outputdir = config['destination']
-sample_rate_choice = config['samplerate']
+$outputdir = config['destination']
+$sample_rate_choice = config['samplerate']
 sox_channels = config['channels']
-codec_choice = config['codec']
+$codec_choice = config['codec']
 $originator = config['orig']
 $history = config['hist']
 $embedbext = config['bext']
@@ -56,7 +57,7 @@ def EmbedBEXT(targetfile)
 end
 
 # GUI App
-Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
+Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   style Shoes::Para, font: "Helvetica"
   background aliceblue
   @logo = image("Resources/audiorecorder_small.png", left: 160)
@@ -73,34 +74,124 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
       end
     end
 
+    def PostRecord(targetfile)
+      window(title: "Post-Record Options", width: 600, height: 500) do
+        trimcheck = nil
+        @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
+        @finaloutput = targetfile
+        para targetfile
+        waveform = image("AUDIORECORDERTEMP.png")
+        @start_trim = nil
+        @end_trim_length = nil
+
+        def SetUpTrim(input)
+          ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + input + "'"
+          $ffprobeout = JSON.parse(`#{ffprobe_command}`)
+          @duration_json = $ffprobeout['streams'][0]['duration']
+          @duration =@duration_json.to_f
+          if ! @end_trim_length.nil? &&  @start_trim_length != "AUTO"
+            $end_trim_opt = @duration - @end_trim_length - @start_trim_length
+          elsif ! @end_trim_length.nil?
+            $end_trim_opt = @duration - @end_trim_length
+          end
+          if @start_trim_length != "AUTO"
+            $start_trim_opt = ' -ss ' + @start_trim_length.to_s
+          end
+        end
+
+        preview = button "Preview"
+        preview.click do
+          if trimcheck.nil?
+            command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + '"' + @finaloutput + '"'
+            system(command)
+          else
+            command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + '"'+ @pretrim + '"'
+            system(command)
+          end
+        end
+        stack do
+          @start_trim_length = "AUTO"
+          para 'Start Trim'
+          start_trim_input = edit_line text = @start_trim_length do
+            if start_trim_input.text.downcase == "auto"
+              @start_trim_length = "AUTO"
+            else
+              @start_trim_length = start_trim_input.text.to_f
+            end
+          end
+        end
+        stack do
+          para 'End Trim'
+          end_trim_input = edit_line do
+            @end_trim_length = end_trim_input.text.to_f
+          end
+        end
+        trim = button "Trim"
+        trim.click do
+          #set up trim
+          if trimcheck.nil?
+            SetUpTrim(@finaloutput)
+            File.rename(@finaloutput, @pretrim)
+            trimcheck = 1
+          else
+            SetUpTrim(@pretrim)
+          end
+          if @start_trim_length == "AUTO"
+            if ! @end_trim_length.nil? && @end_trim_length != 0.0
+              precommand = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + 'INTERMEDIATE.wav'
+              system(precommand)
+              SetUpTrim('INTERMEDIATE.wav')
+              postcommand = 'ffmpeg -i INTERMEDIATE.wav -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+              system(postcommand)
+              File.delete('INTERMEDIATE.wav')
+            else
+              command = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + '"' + @finaloutput + '"'
+              system(command)
+            end
+          else
+            if ! @end_trim_length.nil? && @end_trim_length != 0.0
+              command = 'ffmpeg ' + $start_trim_opt + ' -i ' + '"' + @pretrim + '"' + ' -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+              system(command)
+            else
+              command = 'ffmpeg ' + $start_trim_opt + ' -i ' + '"' + @pretrim + '"' + ' -c copy -y -rf64 auto ' + ' "' + @finaloutput + '"'              
+              system(command)
+            end
+          end
+          command = 'mpv --force-window --no-terminal --keep-open=yes --title="Preview" --geometry=620x620 -lavfi-complex "[aid1]asplit=3[ao][a][b],[a]showwaves=600x240:n=1[a1],[a1]drawbox=0:0:600:240:t=120[a2],[b]showwaves=600x240:mode=cline:colors=0x00FFFF:split_channels=1[b2],[a2][b2]overlay[vo]" ' + '"' + @finaloutput + '"'
+          system(command)
+        end
+      end
+    end
+
+
     para "Sample Rate"
     samplerate = list_box items: ["44100", "48000", "96000"],
-    width: 100, choose: sample_rate_choice do |list|
-      sample_rate_choice = list.text
+    width: 100, choose: $sample_rate_choice do |list|
+      $sample_rate_choice = list.text
     end
 
     para "Codec"
     samplerate = list_box items: ["pcm_s16le", "pcm_s24le"],
-    width: 100, choose: codec_choice do |list|
-      codec_choice = list.text
+    width: 100, choose: $codec_choice do |list|
+      $codec_choice = list.text
     end
   end
 
   stack margin: 10 do
     button "Choose Output Directory" do
-      outputdir = ask_open_folder
-      @destination.replace "#{outputdir}"
+      $outputdir = ask_open_folder
+      @destination.replace "#{$outputdir}"
     end
     flow do
       destination_prompt = para "File will be saved to:"
-      @destination = para "#{outputdir}", underline: "single"
+      @destination = para "#{$outputdir}", underline: "single"
     end 
   end
 
   flow do
     preview = button "Preview"
     preview.click do
-      Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+      Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
       FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
@@ -112,19 +203,24 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     record = button "Record"
     record.click do
       filename = ask("Please Enter File Name")
-      @tempfileoutput = '"' + outputdir + '/' + filename + '"'
-      @fileoutput = outputdir + '/' + filename + '.wav'
-      Soxcommand = 'rec -r ' + sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
-      FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegRECORD = '-f wav -c:a ' + codec_choice  + ' -ar ' + sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
-      FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
-      FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
-      ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
-      syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-      syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
-      system(syscommand1) && system(syscommand2)
-      if $embedbext == 'true'
-        EmbedBEXT(@fileoutput)
+      @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
+      @fileoutput = $outputdir + '/' + filename + '.wav'
+      if ! File.exist?(@fileoutput)
+        Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+        FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
+        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+        FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
+        ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
+        syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
+        syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+        system(syscommand1) && system(syscommand2)
+        if $embedbext == 'true'
+          EmbedBEXT(@fileoutput)
+        end
+        PostRecord(@fileoutput)
+      else
+        alert "A File named #{filename} already exists at that location!"
       end
     end
 
@@ -158,10 +254,10 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
             end
           end
           button "Save Settings" do
-            config['destination'] = outputdir
-            config['samplerate'] = sample_rate_choice
+            config['destination'] = $outputdir
+            config['samplerate'] = $sample_rate_choice
             config['channels'] = sox_channels
-            config['codec'] = codec_choice
+            config['codec'] = $codec_choice
             config['orig'] = $originator
             config['hist'] = $history
             config['bext'] = $embedbext
@@ -177,10 +273,10 @@ Shoes.app(title: "Welcome to AudioRecorder", width: 600, height: 500) do
     end
 
     button "Save Settings" do
-      config['destination'] = outputdir
-      config['samplerate'] = sample_rate_choice
+      config['destination'] = $outputdir
+      config['samplerate'] = $sample_rate_choice
       config['channels'] = sox_channels
-      config['codec'] = codec_choice
+      config['codec'] = $codec_choice
       config['orig'] = $originator
       config['hist'] = $history
       config['bext'] = $embedbext
