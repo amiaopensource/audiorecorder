@@ -113,7 +113,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           @start_trim_length = "AUTO"
           para 'Start Trim'
           start_trim_input = edit_line text = @start_trim_length do
-            if start_trim_input.text == "AUTO"
+            if start_trim_input.text.downcase == "auto"
               @start_trim_length = "AUTO"
             else
               @start_trim_length = start_trim_input.text.to_f
@@ -137,7 +137,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
             SetUpTrim(@pretrim)
           end
           if @start_trim_length == "AUTO"
-            if ! @end_trim_length.nil?
+            if ! @end_trim_length.nil? && @end_trim_length != 0.0
               precommand = 'ffmpeg -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + 'INTERMEDIATE.wav'
               system(precommand)
               SetUpTrim('INTERMEDIATE.wav')
@@ -149,7 +149,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
               system(command)
             end
           else
-            if ! @end_trim_length.nil?
+            if ! @end_trim_length.nil? && @end_trim_length != 0.0
               command = 'ffmpeg ' + $start_trim_opt + ' -i ' + '"' + @pretrim + '"' + ' -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
               system(command)
             else
