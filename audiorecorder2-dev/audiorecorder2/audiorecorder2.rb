@@ -62,18 +62,6 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   background aliceblue
   @logo = image("Resources/audiorecorder_small.png", left: 160)
 
-  flow margin: 10 do
-    para "Select Channel(s)"
-    channels = list_box items: ["1", "2", "1 2"],
-    width: 100, choose: sox_channels do |list|
-      sox_channels = list.text
-      if sox_channels == "1 2"
-        ffmpeg_channels = 'stereo'
-      else
-        ffmpeg_channels = 'mono'
-      end
-    end
-
     def PostRecord(targetfile)
       window(title: "Post-Record Options", width: 600, height: 500) do
         trimcheck = nil
@@ -163,6 +151,26 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
       end
     end
 
+  flow margin: 10 do
+    para "Select Channel(s)"
+    if sox_channels == '1 2'
+      sox_channels_saved = '1 and 2'
+    else
+      sox_channels_saved = sox_channels
+    end
+    channels = list_box items: ["1", "2", "1 and 2"],
+    width: 100, choose: sox_channels_saved do |list|
+      if list.text == '1 and 2'
+        sox_channels = '1 2'
+      else
+        sox_channels = list.text
+      end
+      if sox_channels == "1 2"
+        ffmpeg_channels = 'stereo'
+      else
+        ffmpeg_channels = 'mono'
+      end
+    end
 
     para "Sample Rate"
     if $sample_rate_choice == '44100'
