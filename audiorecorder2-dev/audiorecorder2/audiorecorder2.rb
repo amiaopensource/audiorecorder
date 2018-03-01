@@ -170,10 +170,19 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
       $sample_rate_choice = list.text
     end
 
-    para "Codec"
-    samplerate = list_box items: ["pcm_s16le", "pcm_s24le"],
-    width: 100, choose: $codec_choice do |list|
-      $codec_choice = list.text
+    para "Bit Depth"
+    if $codec_choice == 'pcm_s16le'
+      codec_saved = "16 bit"
+    elsif $codec_choice == 'pcm_s24le'
+      codec_saved = "24 bit"  
+    end
+    bitdepth = list_box items: ["16 bit", "24 bit"],
+    width: 100, choose: codec_saved do |list|
+      if list.text == '16 bit'
+        $codec_choice = 'pcm_s16le'
+      elsif list.text == '24 bit'
+        $codec_choice = 'pcm_s24le'
+      end      
     end
   end
 
