@@ -165,9 +165,22 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
 
     para "Sample Rate"
-    samplerate = list_box items: ["44100", "48000", "96000"],
-    width: 100, choose: $sample_rate_choice do |list|
-      $sample_rate_choice = list.text
+    if $sample_rate_choice == '44100'
+      sample_rate_saved = "44.1 kHz"
+    elsif $sample_rate_choice == '48000'
+      sample_rate_saved = "48 kHz"
+    elsif $sample_rate_choice == '96000'
+      sample_rate_saved = "96 kHz"
+    end  
+    samplerate = list_box items: ["44.1 kHz", "48 kHz", "96 kHz"],
+    width: 100, choose: sample_rate_saved do |list|
+      if list.text == '44.1 kHz'
+        $sample_rate_choice = '44100'
+      elsif list.text == '48 kHz'
+        $sample_rate_choice = '48000'
+      elsif list.text == '96 kHz'
+        $sample_rate_choice = '96000'
+      end
     end
 
     para "Bit Depth"
