@@ -22,7 +22,7 @@ FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
 sox_channels = '1 2'
 ffmpeg_channels = 'stereo'
 $codec_choice = 'pcm_s24le'
-soxbuffer = '50000'
+$soxbuffer = '50000'
 $sample_rate_choice = '96000'
 
 # Load options from config file
@@ -39,6 +39,7 @@ $codec_choice = config['codec']
 $originator = config['orig']
 $history = config['hist']
 $embedbext = config['bext']
+
 #BWF Metaedit Function
 def EmbedBEXT(targetfile)
   moddatetime = File.mtime(targetfile)
@@ -54,6 +55,17 @@ def EmbedBEXT(targetfile)
   end
   bwfcommand = bwfmetaeditpath + ' --reject-overwrite ' + '--Description=' + "'" + file_name + "'"  + ' --Originator=' + "'" + $originator + "'" + ' --History=' + "'" + $history + "'" + ' --OriginatorReference=' + "'" + originatorreference + "'" + ' --OriginationDate=' + moddate + ' --OriginationTime=' + modtime + ' --MD5-Embed ' + "'" + targetfile + "'"
   system(bwfcommand)
+end
+
+#Function for adjusting buffer
+def BufferCheck(sr)
+  if sr == '96000'
+    $soxbuffer = '50000'
+  elsif sr == '48000'
+    $soxbuffer = '25000'
+  elsif sr == '44100'
+    $soxbuffer == '23000'  
+  end
 end
 
 # GUI App
@@ -221,7 +233,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   flow do
     preview = button "Preview"
     preview.click do
-      Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+      BufferCheck($sample_rate_choice)
+      Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
       FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
@@ -232,11 +245,12 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     record = button "Record"
     record.click do
+      BufferCheck($sample_rate_choice)
       filename = ask("Please Enter File Name")
       @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
       @fileoutput = $outputdir + '/' + filename + '.wav'
       if ! File.exist?(@fileoutput)
-        Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + soxbuffer + ' -p remix ' + sox_channels
+        Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
         FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
         FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
