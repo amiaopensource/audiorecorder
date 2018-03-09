@@ -102,7 +102,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
           end
         end
         stack do
-          para "Press 'Preview' to hear the file you recorded.\nTo trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.\nIf 'Start Trim' is left blank, auto-trim will be applied to start of file.  If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.\nPress 'Finish' to quit"
+          para "Press 'Preview' to hear the file you recorded.\n\nTo trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.\n\nIf 'Start Trim' is set to Auto, auto-trim will be applied to start of file.  If no trim at start is desired set this to be empty. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.\n\nPress 'Finish' to quit"
         end
         flow do
           @start_trim_length = "AUTO"
