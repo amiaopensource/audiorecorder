@@ -76,6 +76,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     def PostRecord(targetfile)
       window(title: "Post-Record Options", width: 600, height: 500) do
+        style Shoes::Para, font: "Helvetica"
+        background aliceblue
         trimcheck = nil
         @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
         @finaloutput = targetfile
