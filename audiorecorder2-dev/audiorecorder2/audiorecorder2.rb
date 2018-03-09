@@ -82,7 +82,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
         @finaloutput = targetfile
         stack margin: 15 do
-          waveform = image("AUDIORECORDERTEMP.png")
+          waveform = image($waveform_pic)
         end
         @start_trim = nil
         @end_trim_length = nil
@@ -256,6 +256,13 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
 
     record = button "Record"
     record.click do
+      if ! defined? $record_iteration
+        $record_iteration = 1
+      else
+        $record_iteration = $record_iteration + 1
+      end
+      $waveform_pic = 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.png'
+
       BufferCheck($sample_rate_choice)
       filename = ask("Please Enter File Name")
       @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
@@ -268,7 +275,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
         syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-        syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y AUDIORECORDERTEMP.png -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+        syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y ' + $waveform_pic + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
         system(syscommand1) && system(syscommand2)
         if $embedbext == 'true'
           EmbedBEXT(@fileoutput)
