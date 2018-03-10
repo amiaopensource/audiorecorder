@@ -178,7 +178,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
       end
     end
 
-  flow margin: 10 do
+  flow margin: 2 do
     para "Select Channel(s)"
     if sox_channels == '1 2'
       sox_channels_saved = '1 and 2'
@@ -198,7 +198,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         ffmpeg_channels = 'mono'
       end
     end
-
+    para "\n\n"
     para "Sample Rate"
     if $sample_rate_choice == '44100'
       sample_rate_saved = "44.1 kHz"
@@ -217,7 +217,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         $sample_rate_choice = '96000'
       end
     end
-
+    para "\n\n"
     para "Bit Depth"
     if $codec_choice == 'pcm_s16le'
       codec_saved = "16 bit"
