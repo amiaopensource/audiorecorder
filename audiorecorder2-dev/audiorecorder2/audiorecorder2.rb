@@ -75,13 +75,14 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
   @logo = image("Resources/audiorecorder_small.png", left: 160)
 
     def PostRecord(targetfile)
-      window(title: "Post-Record Options", width: 600, height: 500) do
+      window(title: "Post-Record Options", width: 600, height: 550) do
         style Shoes::Para, font: "Helvetica"
         background aliceblue
         trimcheck = nil
         @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
         @finaloutput = targetfile
         stack margin: 15 do
+          border gainsboro, strokewidth: 6
           waveform = image($waveform_pic)
         end
         @start_trim = nil
@@ -101,8 +102,9 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
             $start_trim_opt = ' -ss ' + @start_trim_length.to_s
           end
         end
-        stack do
-          para "Press 'Preview' to hear the file you recorded.\n\nTo trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.\n\nIf 'Start Trim' is set to Auto, auto-trim will be applied to start of file.  If no trim at start is desired set this to be empty. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.\n\nPress 'Finish' to quit"
+        stack margin: 15 do
+          background lightcyan
+          para "Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'.\n\nIf 'Start Trim' is set to Auto, auto-trim will be applied to start of file.  If no trim at start is desired set this to be empty. After trimming, a preview window will open for your new file.  Trim can be run as many times as is neccessary.\n\nPress 'Finish' to quit"
         end
         flow do
           @start_trim_length = "AUTO"
