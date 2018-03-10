@@ -66,7 +66,9 @@ def BufferCheck(sr)
   elsif sr == '48000'
     $soxbuffer = '25000'
   elsif sr == '44100'
-    $soxbuffer == '23000'  
+    $soxbuffer == '23000'
+  else
+    $soxbuffer = '23000'
   end
 end
 
