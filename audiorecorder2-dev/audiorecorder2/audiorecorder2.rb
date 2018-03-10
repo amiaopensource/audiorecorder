@@ -82,7 +82,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 500) do
         @pretrim = $outputdir + '/' + File.basename(targetfile, File.extname(targetfile)) + '_untrimmed' + '.wav'
         @finaloutput = targetfile
         para targetfile
-        waveform = image("AUDIORECORDERTEMP.png")
+        waveform = image("Resources/audiorecorder_play_small.gif")
         @start_trim = nil
         @end_trim_length = nil
 
