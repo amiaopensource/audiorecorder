@@ -4,6 +4,8 @@ require 'json'
 # Recording Variables
 if RUBY_PLATFORM.include?('linux')
   Drawfontpath = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+else 
+  Drawfontpath = ''
 end
 
 FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
