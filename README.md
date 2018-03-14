@@ -77,7 +77,7 @@ Press 'Preview' to hear the file you recorded. To trim file, enter the amount (i
 
 ## Huge thanks to all contributors to audiorecorder!
 #### Contributors to date:
-privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice)
+privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice), todrobbins (Tod Robbins), ablwr (Ashley Blewer)
 
 Special thanks to Matt Boyd at the University of Washington for extensive testing assistance!
 
