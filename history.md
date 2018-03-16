@@ -1,5 +1,7 @@
 # Development History
 
+**2018-03-15:** In development version 2 (in linux) tested with twenty minute recording at 24 bit/96 kHz stereo recording. File analyzed for interstitial errors using Wavelab Elements 9.5 global analysis with none detected.
+
 **2017-12-26:** Version 0.1.08 released. Mainly typo fixes.
 
 **2017-12-14:** Version 0.1.07 released. Fix bug. Stricter man page syntax.
