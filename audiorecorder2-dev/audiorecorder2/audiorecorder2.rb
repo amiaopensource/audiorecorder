@@ -74,7 +74,14 @@ end
 Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
   style Shoes::Para, font: "Helvetica"
   background aliceblue
-  @logo = image("Resources/audiorecorder_small.png", left: 160)
+  @logo = image("Resources/audiorecorder_small_1.png", left: 160)
+  animate(10) do |frame|
+    if frame.to_i.even?
+      @logo.path = "Resources/audiorecorder_small_3.png"
+    else
+      @logo.path = "Resources/audiorecorder_small_2.png"
+    end
+  end
 
     def PostRecord(targetfile)
       window(title: "Post-Record Options", width: 600, height: 550) do
