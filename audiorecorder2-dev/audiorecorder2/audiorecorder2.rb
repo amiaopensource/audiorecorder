@@ -26,6 +26,7 @@ ffmpeg_channels = 'stereo'
 $codec_choice = 'pcm_s24le'
 $soxbuffer = '50000'
 $sample_rate_choice = '96000'
+$filename = ''
 
 # Load options from config file
 configuration_file = File.expand_path('~/.audiorecorder2.conf')
@@ -71,7 +72,7 @@ def BufferCheck(sr)
 end
 
 # GUI App
-Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
+Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
   style Shoes::Para, font: "Helvetica"
   background aliceblue
   @logo = image("Resources/audiorecorder_small_1.png", left: 160)
@@ -84,7 +85,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
   end
 
     def PostRecord(targetfile)
-      window(title: "Post-Record Options", width: 600, height: 550) do
+      window(title: "Post-Record Options", width: 600, height: 560) do
         style Shoes::Para, font: "Helvetica"
         background aliceblue
         trimcheck = nil
@@ -252,13 +253,28 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
     end 
   end
 
+    stack margin: 10 do
+    button "Choose File Name" do
+      $filename = ask("Please Enter File Name")
+      if $filename == ''
+        @outputfile.replace "#{$filename}"
+      else
+        @outputfile.replace "#{$filename}.wav"
+      end
+    end
+    flow do
+      output_prompt = para "File will be saved as:"
+      @outputfile = para "#{$filename}", underline: "single"
+    end
+  end
+
   flow do
     preview = button "Preview"
     preview.click do
       BufferCheck($sample_rate_choice)
       Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+      FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le -dither_method triangular' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegPreview
       command = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
@@ -275,14 +291,17 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
       $waveform_pic = 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.png'
 
       BufferCheck($sample_rate_choice)
-      filename = ask("Please Enter File Name")
-      @tempfileoutput = '"' + $outputdir + '/' + filename + '"'
-      @fileoutput = $outputdir + '/' + filename + '.wav'
-      if ! File.exist?(@fileoutput)
+      @tempfileoutput = '"' + $outputdir + '/' + $filename + '"'
+      @fileoutput = $outputdir + '/' + $filename + '.wav'
+      if $filename == ''
+        alert "Please enter an output file name!"
+      elsif File.exist?(@fileoutput)
+        alert "A File named #{$filename} already exists at that location!"
+      else
         Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
-        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -dither_method triangular -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le -dither_method triangular' + ' -ar ' + '44100' + ' -'
         FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
         syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
@@ -291,9 +310,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
         if $embedbext == 'true'
           EmbedBEXT(@fileoutput)
         end
-        PostRecord(@fileoutput)
-      else
-        alert "A File named #{filename} already exists at that location!"
+        PostRecord(@fileoutput)   
       end
     end
 
