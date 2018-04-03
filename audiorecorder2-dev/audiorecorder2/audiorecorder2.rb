@@ -71,7 +71,7 @@ def BufferCheck(sr)
 end
 
 # GUI App
-Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
+Shoes.app(title: "AudioRecorder2", width: 600, height: 540) do
   style Shoes::Para, font: "Helvetica"
   background aliceblue
   @logo = image("Resources/audiorecorder_small_1.png", left: 160)
@@ -258,7 +258,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
       BufferCheck($sample_rate_choice)
       Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
       FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-      FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+      FFmpegPreview = '-f wav -c:a ' + 'pcm_s16le -dither_method triangular' + ' -ar ' + '44100' + ' -'
       FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
       ffmpegcommand = FFmpegSTART + FFmpegPreview
       command = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
@@ -281,8 +281,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 520) do
       if ! File.exist?(@fileoutput)
         Soxcommand = 'rec -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = 'ffmpeg -channel_layout ' + ffmpeg_channels + ' -i - '
-        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
-        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le' + ' -ar ' + '44100' + ' -'
+        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -dither_method triangular -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le -dither_method triangular' + ' -ar ' + '44100' + ' -'
         FFplaycommand = 'ffplay -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
         syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
