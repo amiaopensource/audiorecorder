@@ -245,7 +245,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
   stack margin: 10 do
     button "Choose Output Directory" do
       $outputdir = ask_open_folder
-      @destination.replace "#{$outputdir}"
+      @destination.replace "#{$outputdir}" if !outputdir.blank?
     end
     flow do
       destination_prompt = para "File will be saved to:"
