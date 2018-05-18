@@ -316,7 +316,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
         FFplaycommand = Ffplaypath + ' -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
         syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-        syscommand2 = 'ffmpeg -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y ' + $waveform_pic + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+        syscommand2 = Ffmpegpath + ' -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y ' + $waveform_pic + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
         system(syscommand1) && system(syscommand2)
         if $embedbext == 'true'
           EmbedBEXT(@fileoutput)
