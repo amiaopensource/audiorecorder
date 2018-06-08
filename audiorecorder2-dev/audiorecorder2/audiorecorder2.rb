@@ -191,6 +191,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
           end
           close = button "Finish"
           close.click do
+            system("rm #{$waveform_pic}")
             close()
           end
         end
@@ -299,10 +300,10 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
       else
         $record_iteration = $record_iteration + 1
       end
-      $waveform_pic = 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.png'
+      $waveform_pic = $outputdir + '/' + 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.png'
 
       BufferCheck($sample_rate_choice)
-      @tempfileoutput = '"' + $outputdir + '/' + $filename + '"'
+      @tempfileoutput = '"' + $outputdir + '/' + $filename + '_temp' + '"'
       @fileoutput = $outputdir + '/' + $filename + '.wav'
       if $filename == ''
         alert "Please enter an output file name!"
@@ -311,12 +312,12 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
       else
         Soxcommand = Soxpath + ' -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = Ffmpegpath + ' -channel_layout ' + ffmpeg_channels + ' -i - '
-        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -dither_method triangular -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + 'AUDIORECORDERTEMP.wav'
+        FFmpegRECORD = '-f wav -c:a ' + $codec_choice  + ' -dither_method triangular -ar ' + $sample_rate_choice + ' -metadata comment="" -y -rf64 auto ' + @tempfileoutput
         FFmpegPreview = ' -f wav -c:a ' + 'pcm_s16le -dither_method triangular' + ' -ar ' + '44100' + ' -'
         FFplaycommand = Ffplaypath + ' -window_title "AudioRecorder" -f lavfi ' + '"' + 'amovie=\'pipe\:0\'' + ',' + FILTER_CHAIN + '"' 
         ffmpegcommand = FFmpegSTART + FFmpegRECORD + FFmpegPreview
         syscommand1 = Soxcommand + ' | ' + ffmpegcommand + ' | ' + FFplaycommand
-        syscommand2 = Ffmpegpath + ' -i ' + 'AUDIORECORDERTEMP.wav' + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y ' + $waveform_pic + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + 'AUDIORECORDERTEMP.wav'
+        syscommand2 = Ffmpegpath + ' -i ' + @tempfileoutput + ' -lavfi showwavespic=split_channels=1:s=500x150:colors=blue -y ' + $waveform_pic + ' -c copy ' + "'" + @fileoutput + "'" + ' && rm ' + @tempfileoutput
         system(syscommand1) && system(syscommand2)
         if $embedbext == 'true'
           EmbedBEXT(@fileoutput)
