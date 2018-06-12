@@ -301,7 +301,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
       else
         $record_iteration = $record_iteration + 1
       end
-      $waveform_pic = $outputdir + '/' + 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.png'
+      $waveform_pic = $outputdir + '/' + 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.jpg'
 
       BufferCheck($sample_rate_choice)
       @tempfileoutput = '"' + $outputdir + '/' + $filename + '_temp.wav' + '"'
