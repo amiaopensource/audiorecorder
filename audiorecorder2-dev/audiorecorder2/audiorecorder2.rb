@@ -7,6 +7,7 @@ if RUBY_PLATFORM.include?('linux')
   Soxpath = 'rec'
   Ffmpegpath = 'ffmpeg'
   Ffplaypath = 'ffplay'
+  Ffprobepath = 'ffprobe'
   Bwfmetaeditpath = 'bwfmetaedit'
   Mpvpath = 'mpv'
 elsif RUBY_PLATFORM.include?('darwin')
@@ -14,6 +15,7 @@ elsif RUBY_PLATFORM.include?('darwin')
   Soxpath = '/usr/local/bin/rec'
   Ffmpegpath = '/usr/local/bin/ffmpeg'
   Ffplaypath = '/usr/local/bin/ffplay'
+  Ffprobepath = '/usr/local/bin/ffprobe'
   Bwfmetaeditpath = '/usr/local/bin/bwfmetaedit'
   Mpvpath = '/usr/local/bin/mpv'
 else
@@ -111,7 +113,7 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
         @end_trim_length = nil
 
         def SetUpTrim(input)
-          ffprobe_command = 'ffprobe -print_format json -show_streams ' + "'" + input + "'"
+          ffprobe_command = Ffprobepath + ' -print_format json -show_streams ' + "'" + input + "'"
           $ffprobeout = JSON.parse(`#{ffprobe_command}`)
           @duration_json = $ffprobeout['streams'][0]['duration']
           @duration =@duration_json.to_f
