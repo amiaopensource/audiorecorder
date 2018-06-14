@@ -103,6 +103,9 @@ _lookup_channel_layout(){
         "1 and 2")
             CHANNEL_LAYOUT="-channel_layout stereo" && SOXCHANNELS="1 2"
             ;;
+        "3 and 4")
+            CHANNEL_LAYOUT="-channel_layout stereo" && SOXCHANNELS="3 4"
+            ;;
     esac
 }
 
@@ -193,6 +196,7 @@ _master_gui(){
     channel_layout.option = 1
     channel_layout.option = 2
     channel_layout.option = 1 and 2
+    channel_layout.option = 3 and 4
     channel_layout.default = "${channel_layout}"
     #Enable BWF
     bwf.type = checkbox
