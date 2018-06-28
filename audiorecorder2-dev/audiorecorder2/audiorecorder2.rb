@@ -23,7 +23,7 @@ else
 end
 
 # Check FFmpeg version for filter options
-Ffmpegtest = `ffmpeg -version`.split(' ')[2].to_f
+Ffmpegtest = `#{Ffmpegpath} -version`.split(' ')[2].to_f
 if Ffmpegtest >= 4
     Avectorscopefilter = 'avectorscope=s=300x300:r=30:zoom=5:mirror=0'
 else
