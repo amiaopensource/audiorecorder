@@ -24,7 +24,7 @@ end
 
 # Check FFmpeg version for filter options
 
-if system('ffmpeg -version | grep "ffmpeg version 4.0.1\|ffmpeg version 4.0.1"')
+if system('#{Ffmpegpath} -version | grep "ffmpeg version 4.0.1\|ffmpeg version 4.0.1"')
     Avectorscopefilter = 'avectorscope=s=300x300:r=30:zoom=5:mirror=0'
 else
     Avectorscopefilter = 'avectorscope=s=300x300:r=30:zoom=5'
