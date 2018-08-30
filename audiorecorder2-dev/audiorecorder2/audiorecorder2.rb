@@ -213,17 +213,23 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
     para "Select Channel(s)"
     if sox_channels == '1 2'
       sox_channels_saved = '1 and 2'
+    elsif sox_channels == '3 4'
+      sox_channels_saved = '3 and 4'   
     else
       sox_channels_saved = sox_channels
     end
-    channels = list_box items: ["1", "2", "1 and 2"],
+    channels = list_box items: ["1", "2", "1 and 2", "3 and 4"],
     width: 100, choose: sox_channels_saved do |list|
       if list.text == '1 and 2'
         sox_channels = '1 2'
+      elsif list.text == '3 and 4'
+        sox_channels = '3 4'
       else
         sox_channels = list.text
       end
       if sox_channels == "1 2"
+        ffmpeg_channels = 'stereo'
+      elsif sox_channels == "3 4"
         ffmpeg_channels = 'stereo'
       else
         ffmpeg_channels = 'mono'
