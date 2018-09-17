@@ -181,7 +181,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
                 precommand = Ffmpegpath + ' -i ' + '"' + @pretrim + '"' + ' -af silenceremove=start_threshold=-57dB:start_duration=1:start_periods=1 -f wav -c:a ' + $codec_choice  + ' -ar ' + $sample_rate_choice + ' -y -rf64 auto ' + @trimtemp
                 system(precommand)
                 SetUpTrim(@trimtemp)
-                postcommand = Ffmpegpath + ' -i #{@trimtemp} -c copy -y -rf64 auto ' + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+                postcommand = Ffmpegpath + " -i #{@trimtemp} -c copy -y -rf64 auto " + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
+                alert postcommand
                 system(postcommand)
                 File.delete(@trimtemp)
               else
