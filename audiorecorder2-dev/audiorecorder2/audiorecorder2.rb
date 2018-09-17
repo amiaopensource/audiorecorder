@@ -317,8 +317,10 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
       else
         $record_iteration = $record_iteration + 1
       end
+      if $outputdir.nil?
+        $outputdir = ''
+      end
       $waveform_pic = $outputdir + '/' + 'AUDIORECORDERTEMP' + $record_iteration.to_s + '.jpg'
-
       BufferCheck($sample_rate_choice)
       @tempfileoutput = '"' + $outputdir + '/' + $filename + '_temp.wav' + '"'
       @fileoutput = $outputdir + '/' + $filename + '.wav'
@@ -326,6 +328,8 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
         alert "Please enter an output file name!"
       elsif File.exist?(@fileoutput)
         alert "A File named #{$filename} already exists at that location!"
+      elsif ! File.exist?($outputdir)
+        alert "Please enter a valid output Directory!"
       else
         Soxcommand = Soxpath + ' -r ' + $sample_rate_choice + ' -b 32 -L -e signed-integer --buffer ' + $soxbuffer + ' -p remix ' + sox_channels
         FFmpegSTART = Ffmpegpath + ' -channel_layout ' + ffmpeg_channels + ' -i - '
