@@ -182,7 +182,6 @@ Shoes.app(title: "AudioRecorder2", width: 600, height: 625) do
                 system(precommand)
                 SetUpTrim(@trimtemp)
                 postcommand = Ffmpegpath + " -i #{@trimtemp} -c copy -y -rf64 auto " + ' -t ' + $end_trim_opt.to_s + ' "' + @finaloutput + '"'
-                alert postcommand
                 system(postcommand)
                 File.delete(@trimtemp)
               else
