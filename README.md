@@ -78,6 +78,12 @@ Once recording is complete, audiorecorder will process the file, and then an int
 Press 'Preview' to hear the file you recorded. To trim file, enter the amount (in seconds) to trim from the start and end of the file and press 'Trim'. If 'Start Trim' is left blank, auto-trim will be applied to start of file. If no trim at start is desired enter '0'. After trimming, a preview window will open for your new file. Trim can be run as many times as is necessary. Once you are done, press 'Finish' to finalize and quit. It is at this point that BEXT metadata will be embedded if that option has been selected.
 
 ## Huge thanks to all contributors to audiorecorder!
+
+#### Project Maintainers are:
+Andrew Weaver (@privatezero)
+
+Ashley Blewer (@ablwr)
+
 #### Contributors to date:
 privatezero (Andrew Weaver), retokromer (Reto Kromer), dericed (Dave Rice), todrobbins (Tod Robbins), ablwr (Ashley Blewer)
 
