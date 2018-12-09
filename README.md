@@ -36,7 +36,7 @@ __linuxbrew commands__
 
 If FFmpeg has already been installed with these options then skip next step. 
 
-`brew install ffmpeg --with-freetype --with-sdl2`
+`brew install ffmpeg --with-freetype`
 
 sdl2 is necessary to build FFmpeg with FFplay, but removing it after build will avoid conflicts between other installations of sdl2.
 
