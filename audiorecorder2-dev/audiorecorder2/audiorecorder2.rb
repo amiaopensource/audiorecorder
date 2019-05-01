@@ -31,7 +31,7 @@ else
 end
 
 FILTER_CHAIN = "asplit=6[out1][a][b][c][d][e],\
-[e]showvolume=w=700:c=0xff0000:r=30[e1],\
+[e]showvolume=w=700:c=0xFFff0000:r=30[e1],\
 [a]showfreqs=mode=bar:cmode=separate:size=300x300:colors=magenta|yellow[a1],\
 [a1]drawbox=12:0:3:300:white@0.2[a2],[a2]drawbox=66:0:3:300:white@0.2[a3],[a3]drawbox=135:0:3:300:white@0.2[a4],[a4]drawbox=202:0:3:300:white@0.2[a5],[a5]drawbox=271:0:3:300:white@0.2[aa],\
 [b]#{Avectorscopefilter}[b1],\
