@@ -5,8 +5,39 @@
 VERSION=$(TMP=$(brew info audiorecorder | grep ".*\*$" | grep -Eo "/audiorecorder/.* \(") ; echo ${TMP:15:(${#TMP}-17)})
 config="${HOME}/.$(basename "${0}").conf"
 bwf_config="${HOME}/.$(basename "${0}")_BWF.conf"
-touch "${config}"
-touch "${bwf_config}"
+# setup config file if doesn't exist
+if ! [ -e "${config}" ] ; then
+    sample_rate='96 kHz'
+    bit_depth='24 bit'
+    channel_layout='1 and 2'
+    bwf='0'
+    {
+    echo "#Please input choices between the quotes from the options supplied"
+    echo ""
+    echo "#Enter output directory for digitized files"
+    echo "output=\"${output}\""
+    echo ""
+    echo "#Sample Rate Choices: 44.1 kHz, 48 kHz, 96 kHz"
+    echo "sample_rate=\"${sample_rate}\""
+    echo "#Bit Depth Choices: 16 bit, 24 bit"
+    echo "bit_depth=\"${bit_depth}\""
+    echo "#Channel Layout Choices: 1, 2, 1 and 2"
+    echo "channel_layout=\"${channel_layout}\""
+    echo "#BWF Choices 0, 1 (0 for off 1 for on)"
+    echo "bwf=\"${bwf}\""
+    } > "${config}"
+fi
+# setup metadata config file if doesn't exist
+if ! [ -e "${bwf_config}" ] ; then
+    {
+    echo "#Enter originator information betwen the quotes"
+    echo "originator=\"${originator}\""
+    echo ""
+    echo "#Enter Coding History information betwen the quotes"
+    echo "coding_history=\"${coding_history}\""
+    } > "${bwf_config}"
+fi
+
 touch ~/.config/mpv/input.conf
 . "${config}"
 . "${bwf_config}"
@@ -357,6 +388,8 @@ if [ "${runtype}" = "edit" ] ; then
     echo "#BWF Choices 0, 1 (0 for off 1 for on)"
     echo "bwf=\"${bwf}\""
     } > "${config}"
+    echo "Audiorecorder settings updated."
+    exit 0
 fi
 if [ "${runtype}" = "metadata" ] ; then
     _metadata_gui
@@ -367,6 +400,8 @@ if [ "${runtype}" = "metadata" ] ; then
     echo "#Enter Coding History information betwen the quotes"
     echo "coding_history=\"${coding_history}\""
     } > "${bwf_config}"
+    echo "BWF settings updated."
+    exit 0
 fi
 
 #Verify and configure
