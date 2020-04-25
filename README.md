@@ -9,7 +9,7 @@ For updates and history of development please see [this page](https://github.com
 
 __Audiorecorder2 Note:__ Audiorecorder2 can now be installed along side audiorecorder by adding the flag `--with-audiorecorder2` to the following homebrew install commands.
 
-audiorecorder can be installed via [homebrew](https://brew.sh/) on macOS and [linuxbrew](http://linuxbrew.sh/) on Linux.
+audiorecorder can be installed via Homebrew on [macOS](https://brew.sh/) and [Linux](https://docs.brew.sh/Homebrew-on-Linux).
 
 __MacOS Installation__:
 Audiorecorder can be installed via Homebrew with the following commands:
